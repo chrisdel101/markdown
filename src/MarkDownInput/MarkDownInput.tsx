@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useReducer } from 'react'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useReducer,
+  useCallback,
+} from 'react'
 import ReactMarkDown from 'react-markdown'
 // @ts-ignore
 import remarkGfm from 'remark-gfm'
@@ -56,6 +62,7 @@ import {
   getCurrentLineInsideList,
   adjustListIndexes,
 } from './markDownInputUtils'
+import useDebounce from './useDebounce'
 
 export interface CursorState {
   startIndex: number
@@ -235,6 +242,7 @@ const MarkDownInput = (props: IProps) => {
     previousClick: ClickType.Empty,
     previousInputValue: '',
   })
+  const debouncedInputValue = useDebounce(inputValue)
 
   const textRef = useRef<HTMLTextAreaElement | null>(null)
   useEffect(() => {
@@ -248,7 +256,7 @@ const MarkDownInput = (props: IProps) => {
     // }
   }, [inputValue])
   useEffect(() => {
-    const splitInputOnNewlines = inputValue.split('\n')
+    const splitInputOnNewlines = debouncedInputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
     // console.log('currentLineNumber', currentLineNumber);
@@ -329,9 +337,9 @@ const MarkDownInput = (props: IProps) => {
       } else if (!buttonState['list'] && !buttonState['listOl']) {
         // console.log('fired ');
         if (cursorIndexes?.type === 'keyup') {
-          console.log('keyup', cursorIndexes?.keyType)
+          // console.log('keyup', cursorIndexes?.keyType)
           const keyType: string | undefined = cursorIndexes?.keyType
-          console.log('keyType', keyType)
+          // console.log('keyType', keyType)
           const keyTypes: string[] = [
             'ArrowUp',
             'ArrowDown',
@@ -340,7 +348,7 @@ const MarkDownInput = (props: IProps) => {
           ]
           //includes won't work here
           const checkKey = keyType && keyTypes.indexOf(keyType) !== -1
-          console.log('check', checkKey)
+          console.log('check key is arrow', checkKey)
           if (checkKey) {
             const insideList = isCursorInsideList(listsArr, cursorIndexes)
             if (!insideList) return
@@ -396,14 +404,18 @@ const MarkDownInput = (props: IProps) => {
           // if (listUpdates?._buttonState) setButtonState(listUpdates._buttonState);
         }
       }
-      const updatedListsArr = adjustListIndexes(
+      // cast to get rid of nevers
+      const updatedListsArr: List[] = adjustListIndexes(
         listsArr,
-        inputValue,
+        debouncedInputValue,
         activeListIndexState.currentListIndex
-      )
+      ) as List[]
+
+      // returns empty array when no change
       if (updatedListsArr.length) {
         // TODO - make more effiecent
-        console.log('update lists', updatedListsArr)
+        // const :List[] = updatedListsArr as List[]
+        console.log('---UPDATE LIST----', updatedListsArr)
         setListsArr(updatedListsArr)
       }
     }
@@ -492,10 +504,10 @@ const MarkDownInput = (props: IProps) => {
       previousInputValue: y,
     })
   }
-
+  //@ts-ignore
+  // console.log('handler', handler())
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value)
-
     // dispatch({ updateType: 'input' });
     // adjust line indexes of lists
     // const currentActiveListIndex = activeListIndexState.currentListIndex;
@@ -719,6 +731,7 @@ const MarkDownInput = (props: IProps) => {
     if (event.key === 'Enter') {
       console.log('----------ENTER------------')
       // adjust cursor position to new line
+
       dispatch({
         updateType: DispatchType.Enter,
         refCurrent: textRef.current,
