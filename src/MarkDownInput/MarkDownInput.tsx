@@ -256,13 +256,15 @@ const MarkDownInput = (props: IProps) => {
     // }
   }, [inputValue])
   useEffect(() => {
-    const splitInputOnNewlines = debouncedInputValue.split('\n')
+    let splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
     // console.log('currentLineNumber', currentLineNumber);
     // console.log('activeListIndexState', activeListIndexState);
     // set currentine when index moves
     setCurrentLineNumber(whichLineNumOnNow)
+    // ressaign to debouncer
+    // splitInputOnNewlines = debouncedInputValue.split('\n')
     const listUpdate = true
     //temp switch - remove after dev
     if (listUpdate) {
@@ -348,17 +350,17 @@ const MarkDownInput = (props: IProps) => {
           ]
           //includes won't work here
           const checkKey = keyType && keyTypes.indexOf(keyType) !== -1
-          console.log('check key is arrow', checkKey)
+          // console.log('check key is arrow', checkKey)
           if (checkKey) {
             const insideList = isCursorInsideList(listsArr, cursorIndexes)
             if (!insideList) return
-            console.log('activeListIndexState', activeListIndexState)
+            // console.log('activeListIndexState', activeListIndexState)
             // console.log('INN', insideList);
             const currentListIndex =
               insideList && getCurrentListIndex(listsArr, cursorIndexes)
             if (typeof currentListIndex !== 'number') return
             const currentList = listsArr && listsArr[currentListIndex]
-            console.log('currentList', currentList)
+            // console.log('currentList', currentList)
             // console.log('activeListIndexState', activeListIndexState);
             // set list to active
             const newActiveListIndexState: ActiveListIndex = {
@@ -407,7 +409,7 @@ const MarkDownInput = (props: IProps) => {
       // cast to get rid of nevers
       const updatedListsArr: List[] = adjustListIndexes(
         listsArr,
-        debouncedInputValue,
+        inputValue,
         activeListIndexState.currentListIndex
       ) as List[]
 
@@ -416,7 +418,7 @@ const MarkDownInput = (props: IProps) => {
         // TODO - make more effiecent
         // const :List[] = updatedListsArr as List[]
         console.log('---UPDATE LIST----', updatedListsArr)
-        setListsArr(updatedListsArr)
+        // setListsArr(updatedListsArr)
       }
     }
 
@@ -728,6 +730,8 @@ const MarkDownInput = (props: IProps) => {
   const handleKeyUp = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
+    // console.log('indexesArr', indexesArr)
+
     if (event.key === 'Enter') {
       console.log('----------ENTER------------')
       // adjust cursor position to new line
@@ -782,6 +786,8 @@ const MarkDownInput = (props: IProps) => {
               setButtonState(_buttonState)
               return
             } else {
+              console.log('indexesArr1', indexesArr)
+
               const {
                 _listsArr,
                 _inputValue,
@@ -812,6 +818,8 @@ const MarkDownInput = (props: IProps) => {
 
             // check if current line has text along with list index
           } else {
+            console.log('indexesArr2', indexesArr)
+
             const {
               _listsArr,
               _inputValue,
@@ -873,6 +881,8 @@ const MarkDownInput = (props: IProps) => {
               setButtonState(_buttonState)
               return
             } else {
+              console.log('indexesArr3', indexesArr)
+
               const {
                 _listsArr,
                 _inputValue,
@@ -1083,7 +1093,7 @@ const StyledRow = styled(Row)`
   margin-top: 10px;
 `
 const PreviewWrapper = styled.div`
-  display: flex;
+  display: block;
   min-height: 100px;
   border: 1px solid grey;
   border-radius: 5px;

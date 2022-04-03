@@ -4,6 +4,7 @@ import {
   onAddSpaceLineFormatter,
   isNumber,
   regex,
+  calcEndIndexFromLineLengths,
 } from '../markDownInputUtils'
 
 export interface CreateListInput {
@@ -158,9 +159,13 @@ export class List {
     this.itemIndexes.push(itemIndex)
   }
   writeLineIndex = () => {
-    return this.listType === ListTypes.list.valueOf()
-      ? `* `
-      : `${this.itemIndexes.length}. `
+    console.log('write line index')
+    const lineIndex =
+      this.listType === ListTypes.list.valueOf()
+        ? `* `
+        : `${this.itemIndexes.length}. `
+    console.log('writeLineIndex', lineIndex)
+    return lineIndex
   }
 }
 // export const listContructor = ({
@@ -322,13 +327,13 @@ export const updateList = ({
   const sliceInputValueStart = splitInputOnNewlines.slice(
     currentList.lineNumberStart
   )
-  // console.log('sliceInputValueStart input', sliceInputValueStart);
+  // console.log('sliceInputValueStart input', sliceInputValueStart)
   // trim empty arr elements off end
   const sliceInputValueEnd = sliceInputValueStart
     .slice(0, currentList.itemIndexes?.slice(-1)[0] + 1)
     .filter(Boolean)
-  // console.log('sliceInputValueStart input', sliceInputValueStart);
-  // console.log('sliceInputValueEnd input', sliceInputValueEnd);
+  console.log('sliceInputValueStart input', sliceInputValueStart)
+  console.log('sliceInputValueEnd input', sliceInputValueEnd)
   // console.log('slice off last 2', sliceInputValueStart?.slice(-2));
   //CONTENT: split list content
   // const splitOnNewLineListContent = currentList.content?.split('\n');
@@ -338,13 +343,19 @@ export const updateList = ({
   const currentLineListContentStr =
     currentList?.content?.[lineNumInCurrentList] || ''
   // DIFF: compare list saved content to current page inputValue
-  // console.log('---@index:', cursorIndexes.startIndex);
-  //@ts-ignore
-  // console.log('---input split currentLineInputValue diff:', currentLineInputValue?.split());
-  //@ts-ignore
-  // console.log('---content split currentLineListContentStr diff:', currentLineListContentStr?.split());
+  console.log('---@index:', cursorIndexes.startIndex)
+  console.log(
+    '---input split currentLineInputValue diff:',
+    //@ts-ignore
+    currentLineInputValue?.split()
+  )
+  console.log(
+    '---content split currentLineListContentStr diff:',
+    //@ts-ignore
+    currentLineListContentStr?.split()
+  )
   if (currentLineInputValue !== currentLineListContentStr) {
-    // console.log('CHECKER FOUND DIFF');
+    console.log('CHECKER FOUND DIFF')
 
     // const newInputValueLength = currentLineInputValue?.length;
     // const listContentLen1gth = currentLineListContentStr?.length;
@@ -360,23 +371,36 @@ export const updateList = ({
       0,
       currentList.itemIndexes?.length
     )
+    // get new endIndex option1 - add all lines of content length
+    const listContentLength = currentList.content?.join().length
+      ? currentList.content?.join().length + 1
+      : undefined
+    console.log('listContentLength', listContentLength)
+    const lineLengthsEndIndex = isNumber(listContentLength)
+      ? currentList.startIndex + listContentLength!
+      : undefined
+    console.log('lineLengthsEndIndex', lineLengthsEndIndex)
+    console.log('slice start', sliceLineIndexesStart)
+    console.log('slice end', sliceLineIndexesEnd)
+    console.log('Current end index', currentList.endIndex)
+    let assignEndIndex = isNumber(lineLengthsEndIndex)
+      ? lineLengthsEndIndex
+      : sliceLineIndexesEnd?.slice(-1)?.[0] || 0
+    // let lastIndex = sliceLineIndexesEnd?.slice(-1)?.[0] || 0
+    console.log('lastIndex', assignEndIndex)
 
-    // console.log('slice start', sliceLineIndexesStart);
-    // console.log('slice end', sliceLineIndexesEnd);
-    // console.log('Current end index', currentList.endIndex);
-    let lastIndex = sliceLineIndexesEnd?.slice(-1)?.[0] || 0
-    console.log('lastIndex', lastIndex)
     const currentInputLineLen =
       currentLineInputValue?.length > 0 ? currentLineInputValue?.length : 0
     const currentContentLineLen =
       currentLineListContentStr?.length > 0
         ? currentLineListContentStr?.length
         : 0
-    // console.log('currentInputLineLen', currentInputLineLen);
-    // console.log('currentContentLineLen', currentContentLineLen);
+    console.log('currentInputLineLen', currentInputLineLen)
+    console.log('currentContentLineLen', currentContentLineLen)
     // CHECK for breakout, last two arr items are blank ['', '']
     // update list to the current inputValue on page
     // console.log('currentList', currentList);
+    // calcEndIndexFromLineLengths()
     let newList = {
       ...currentList,
       // assign lineIIndexes of list in progress
@@ -385,14 +409,16 @@ export const updateList = ({
       startIndex: sliceLineIndexesEnd[0],
       // should be updating on each type so add/sub 1
       //update index based on inputValue, add or subtract
-      endIndex:
-        currentInputLineLen > currentContentLineLen
-          ? (currentList?.endIndex ?? 0) + 1
-          : (currentList?.endIndex ?? 0) - 1,
+      // THIS WAY DOESN'T work - too slow
+      // endIndex:
+      //   currentInputLineLen > currentContentLineLen
+      //     ? currentList?.endIndex + 1 ?? 0
+      //     : currentList?.endIndex - 1 ?? 0,
+      endIndex: assignEndIndex!,
       // content: onAddSpaceLineFormatter(sliceInputValueEnd).join('').trim(),
       content: sliceInputValueEnd,
     }
-    // console.log('New newList create', newList);
+    console.log('New newList create', newList)
     // if (sliceInputValueStart?.slice(-2).join('') == ['', ''].join('')) {
     //   console.log('------BREAKOUT-------');
     //   // adjust any endIndex made b4 breakout
@@ -513,7 +539,11 @@ export const continueList = ({
   const currentListCopy = {
     ...listsArr[activeListIndexState.currentListIndex || 0],
   }
-  // console.log('activeListIndexState.currentListIndex', activeListIndexState.currentListIndex);
+  console.log(
+    'activeListIndexState.currentListIndex',
+    activeListIndexState.currentListIndex
+  )
+  console.log('currentListCopy', currentListCopy)
   currentListCopy.addItemIndex(currentListCopy.itemIndexes.length + 1)
   const splitInputOnNewlinesCopy = [...(splitInputOnNewlines || [])]
 
@@ -550,11 +580,12 @@ export const continueList = ({
   newContentArr = sliceInputValueEnd
   // console.log('newContentArr', newContentArr);
 
+  // console.log('indexesArr', indexesArr)
   currentListCopy.lineIndexes = [
     ...(currentListCopy?.lineIndexes || []),
     indexesArr[currentLineNumber + 1],
   ]
-  // console.log('lineIndexes', currentListCopy.lineIndexes);
+  console.log('lineIndexes', currentListCopy.lineIndexes)
   // set basic endIndexs as start of newline - this is default
   currentListCopy.endIndex = currentListCopy.lineIndexes.slice(-1)[0] || 0
   // console.log('currentListCopy.endIndex', currentListCopy.endIndex);

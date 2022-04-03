@@ -358,7 +358,7 @@ export const adjustListIndexes = (
     .filter((list): list is List => Boolean(list))
   // })
 
-  console.log('new', newStartIndexes)
+  // console.log('new', newStartIndexes)
   return newStartIndexes
   // if (newStartIndexes?.[0]) {
   //   listsArr?.[0] && calculateNewList(listsArr[0], newStartIndexes[0], currentLineNumber);
@@ -380,3 +380,4 @@ export const debounce = (func: (...args: any) => void, wait: number) => {
     timeout = setTimeout(later, wait)
   }
 }
+export const calcEndIndexFromLineLengths = (listLineIndexes: number[]) => {}
