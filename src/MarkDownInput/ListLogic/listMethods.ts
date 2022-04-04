@@ -307,7 +307,6 @@ export const updateList = ({
   buttonState,
 }: UpdateListInput) => {
   console.log('------UDPATE--------')
-  const listsArrCopy = [...listsArr]
   console.log('splitInputOnNewlines input', splitInputOnNewlines)
   // console.log('---@index:', cursorIndexes.startIndex);
 
@@ -356,9 +355,6 @@ export const updateList = ({
   )
   if (currentLineInputValue !== currentLineListContentStr) {
     console.log('CHECKER FOUND DIFF')
-
-    // const newInputValueLength = currentLineInputValue?.length;
-    // const listContentLen1gth = currentLineListContentStr?.length;
     //LINE INDEXES
     // // get indexes of current page split inputValue
     let inputLineIndexes = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
@@ -372,9 +368,11 @@ export const updateList = ({
       currentList.itemIndexes?.length
     )
     // get new endIndex option1 - add all lines of content length
+    // get new endIndex option2 - use each lines length - not used
     const listContentLength = currentList.content?.join().length
       ? currentList.content?.join().length + 1
       : undefined
+    console.log('currentList.content?', currentList.content)
     console.log('listContentLength', listContentLength)
     const lineLengthsEndIndex = isNumber(listContentLength)
       ? currentList.startIndex + listContentLength!
@@ -389,14 +387,14 @@ export const updateList = ({
     // let lastIndex = sliceLineIndexesEnd?.slice(-1)?.[0] || 0
     console.log('lastIndex', assignEndIndex)
 
-    const currentInputLineLen =
-      currentLineInputValue?.length > 0 ? currentLineInputValue?.length : 0
-    const currentContentLineLen =
-      currentLineListContentStr?.length > 0
-        ? currentLineListContentStr?.length
-        : 0
-    console.log('currentInputLineLen', currentInputLineLen)
-    console.log('currentContentLineLen', currentContentLineLen)
+    // const currentInputLineLen =
+    //   currentLineInputValue?.length > 0 ? currentLineInputValue?.length : 0
+    // const currentContentLineLen =
+    //   currentLineListContentStr?.length > 0
+    //     ? currentLineListContentStr?.length
+    //     : 0
+    // console.log('currentInputLineLen', currentInputLineLen)
+    // console.log('currentContentLineLen', currentContentLineLen)
     // CHECK for breakout, last two arr items are blank ['', '']
     // update list to the current inputValue on page
     // console.log('currentList', currentList);
@@ -419,33 +417,6 @@ export const updateList = ({
       content: sliceInputValueEnd,
     }
     console.log('New newList create', newList)
-    // if (sliceInputValueStart?.slice(-2).join('') == ['', ''].join('')) {
-    //   console.log('------BREAKOUT-------');
-    //   // adjust any endIndex made b4 breakout
-    //   let newEndIndex = lastIndex + currentInputLineLen - 1;
-    //   // adjust any inputLineIndexes made b4 breakout
-    //   inputLineIndexes = sliceLineIndexesEnd?.slice(0, -1) || [];
-    //   console.log('new inputLineIndexes', inputLineIndexes);
-    //   // adjust line itemIndexes - slice off last
-    //   const newItemIndexes = currentList.itemIndexes.slice(0, -1);
-    //   // update endIndex and lineIndexes on list break
-    //   newList = {
-    //     ...newList,
-    //     itemIndexes: newItemIndexes,
-    //     endIndex: newEndIndex,
-    //     lineIndexes: inputLineIndexes,
-    //   };
-    //   // const listsArrCopy = [...listsArr];
-    //   console.log('breakout newList saved', newList);
-    //   if (isNumber(listIndex)) listsArrCopy[listIndex!] = newList;
-    //   console.log('activeListIndexState', activeListIndexState);
-
-    //   return {
-    //     _listsArr: listsArrCopy,
-    //     _buttonState: { ...buttonState, [currentList.listType]: false },
-    //   };
-    // } else {
-    // console.log('activeListIndexState', activeListIndexState);
 
     const listsArrCopy = [...listsArr]
     // console.log('32', newList);

@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 
-export default function useDebounce(value: string, delay: number = 500) {
+// https://stackoverflow.com/a/67816286/5972531
+export default function useDebounce(value: string, delay: number = 300) {
   const [debouncedValue, setDebouncedValue] = React.useState(value)
-
-  React.useEffect(() => {
+  // console.log('VALue', value)
+  useEffect(() => {
     const handler: NodeJS.Timeout = setTimeout(() => {
       setDebouncedValue(value)
     }, delay)
@@ -13,6 +14,6 @@ export default function useDebounce(value: string, delay: number = 500) {
       clearTimeout(handler)
     }
   }, [value, delay])
-
+  // console.log('debouncedValue', debouncedValue)
   return debouncedValue
 }

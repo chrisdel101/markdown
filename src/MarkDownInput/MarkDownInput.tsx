@@ -242,6 +242,7 @@ const MarkDownInput = (props: IProps) => {
     previousClick: ClickType.Empty,
     previousInputValue: '',
   })
+  const [isTyping, setIsTyping] = useState<boolean>(false)
   const debouncedInputValue = useDebounce(inputValue)
 
   const textRef = useRef<HTMLTextAreaElement | null>(null)
@@ -256,6 +257,26 @@ const MarkDownInput = (props: IProps) => {
     // }
   }, [inputValue])
   useEffect(() => {
+    // console.log('ISE', isTyping)
+    // console.log('IdebouncedInputValueSE', debouncedInputValue)
+
+    if (debouncedInputValue) {
+      setIsTyping(true)
+    }
+    // console.log('ISE', isTyping)
+    // else {
+    const handler: NodeJS.Timeout = setTimeout(() => {
+      setIsTyping(false)
+    }, 500)
+    // / Cancel the timeout if value changes (also on delay change or unmount)
+    return () => {
+      clearTimeout(handler)
+    }
+    // }
+  }, [debouncedInputValue])
+  useEffect(() => {
+    // console.log('ISE', isTyping)
+
     let splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
@@ -263,8 +284,7 @@ const MarkDownInput = (props: IProps) => {
     // console.log('activeListIndexState', activeListIndexState);
     // set currentine when index moves
     setCurrentLineNumber(whichLineNumOnNow)
-    // ressaign to debouncer
-    // splitInputOnNewlines = debouncedInputValue.split('\n')
+    // ressaign to debouncer)
     const listUpdate = true
     //temp switch - remove after dev
     if (listUpdate) {
@@ -290,9 +310,9 @@ const MarkDownInput = (props: IProps) => {
             }
           }
 
-          console.log('move before start')
-          console.log('CCC', cursorIndexes?.keyType)
-          console.log('CCC', cursorIndexes?.type)
+          // console.log('move before start')
+          // console.log('CCC', cursorIndexes?.keyType)
+          // console.log('CCC', cursorIndexes?.type)
         }
         // exclude list newline and breakout
         else if (
@@ -307,29 +327,34 @@ const MarkDownInput = (props: IProps) => {
             const insideList = isCursorInsideList(listsArr, cursorIndexes)
             // if not list set button, active, to false
           } else {
-            const listUpdates = updateList({
-              splitInputOnNewlines,
-              activeListIndexState,
-              listsArr,
-              currentLineNumber: whichLineNumOnNow,
-              cursorIndexes,
-              buttonState,
-            })
-            if (listUpdates !== undefined) {
-              console.log('listUpdates', listUpdates)
-              console.log('activeListIndexState', activeListIndexState)
-              // if active we're inside a list
-              if (typeof activeListIndexState.currentListIndex === 'number') {
-                if (listUpdates?._listsArr) {
-                  setListsArr(listUpdates?._listsArr)
-                }
-                // were outside a list
-              } else {
-                if (listUpdates?._listsArr) {
-                  setListsArr(listUpdates?._listsArr)
-                }
-                if (listUpdates?._buttonState) {
-                  setButtonState(listUpdates._buttonState)
+            if (!isTyping) {
+              splitInputOnNewlines = debouncedInputValue.split('\n')
+              console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
+
+              const listUpdates = updateList({
+                splitInputOnNewlines,
+                activeListIndexState,
+                listsArr,
+                currentLineNumber: whichLineNumOnNow,
+                cursorIndexes,
+                buttonState,
+              })
+              if (listUpdates !== undefined) {
+                console.log('listUpdates', listUpdates)
+                console.log('activeListIndexState', activeListIndexState)
+                // if active we're inside a list
+                if (typeof activeListIndexState.currentListIndex === 'number') {
+                  if (listUpdates?._listsArr) {
+                    setListsArr(listUpdates?._listsArr)
+                  }
+                  // were outside a list
+                } else {
+                  if (listUpdates?._listsArr) {
+                    setListsArr(listUpdates?._listsArr)
+                  }
+                  if (listUpdates?._buttonState) {
+                    setButtonState(listUpdates._buttonState)
+                  }
                 }
               }
             }
@@ -394,16 +419,6 @@ const MarkDownInput = (props: IProps) => {
             ...buttonState,
             [currentList?.listType as keyof ButtonState]: true,
           })
-          // const listUpdates = updateList({
-          //   splitInputOnNewlines,
-          //   activeListIndexState: newActiveListIndexState,
-          //   listsArr,
-          //   currentLineNumber: whichLineNumOnNow,
-          //   cursorIndexes,
-          //   buttonState,
-          // });
-          // if (listUpdates?._listsArr) setListsArr(listUpdates?._listsArr);
-          // if (listUpdates?._buttonState) setButtonState(listUpdates._buttonState);
         }
       }
       // cast to get rid of nevers
@@ -423,7 +438,7 @@ const MarkDownInput = (props: IProps) => {
     }
 
     // console.log('ref', textRef.current?.selectionStart);
-  }, [cursorIndexes, buttonState])
+  }, [cursorIndexes, buttonState, isTyping])
   // use isInsideListPrev to toggle list buttons
 
   const focusTextRef = () => {
