@@ -355,11 +355,15 @@ export const updateList = ({
   )
   if (currentLineInputValue !== currentLineListContentStr) {
     console.log('CHECKER FOUND DIFF')
+    console.log('curentList', currentList)
+    // get length of all lines
+    const listContentLength = sliceInputValueEnd.join().length
+    // add to start inded to get endIndex
+    const newEndIndex = currentList.startIndex + listContentLength
     //LINE INDEXES
-    // // get indexes of current page split inputValue
+    // get indexes of current page split inputValue
     let inputLineIndexes = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
-    // console.log('inputLineIndexes', inputLineIndexes);
-    // slice arrs of inputValue to match current list range
+    // // slice arrs of inputValue to match current list range
     const sliceLineIndexesStart = inputLineIndexes?.slice(
       currentList.lineNumberStart
     )
@@ -367,53 +371,13 @@ export const updateList = ({
       0,
       currentList.itemIndexes?.length
     )
-    // get new endIndex option1 - add all lines of content length
-    // get new endIndex option2 - use each lines length - not used
-    const listContentLength = currentList.content?.join().length
-      ? currentList.content?.join().length + 1
-      : undefined
-    console.log('currentList.content?', currentList.content)
-    console.log('listContentLength', listContentLength)
-    const lineLengthsEndIndex = isNumber(listContentLength)
-      ? currentList.startIndex + listContentLength!
-      : undefined
-    console.log('lineLengthsEndIndex', lineLengthsEndIndex)
-    console.log('slice start', sliceLineIndexesStart)
-    console.log('slice end', sliceLineIndexesEnd)
-    console.log('Current end index', currentList.endIndex)
-    let assignEndIndex = isNumber(lineLengthsEndIndex)
-      ? lineLengthsEndIndex
-      : sliceLineIndexesEnd?.slice(-1)?.[0] || 0
-    // let lastIndex = sliceLineIndexesEnd?.slice(-1)?.[0] || 0
-    console.log('lastIndex', assignEndIndex)
-
-    // const currentInputLineLen =
-    //   currentLineInputValue?.length > 0 ? currentLineInputValue?.length : 0
-    // const currentContentLineLen =
-    //   currentLineListContentStr?.length > 0
-    //     ? currentLineListContentStr?.length
-    //     : 0
-    // console.log('currentInputLineLen', currentInputLineLen)
-    // console.log('currentContentLineLen', currentContentLineLen)
-    // CHECK for breakout, last two arr items are blank ['', '']
-    // update list to the current inputValue on page
-    // console.log('currentList', currentList);
-    // calcEndIndexFromLineLengths()
     let newList = {
       ...currentList,
       // assign lineIIndexes of list in progress
       lineIndexes: sliceLineIndexesEnd,
       // reassign first as start
       startIndex: sliceLineIndexesEnd[0],
-      // should be updating on each type so add/sub 1
-      //update index based on inputValue, add or subtract
-      // THIS WAY DOESN'T work - too slow
-      // endIndex:
-      //   currentInputLineLen > currentContentLineLen
-      //     ? currentList?.endIndex + 1 ?? 0
-      //     : currentList?.endIndex - 1 ?? 0,
-      endIndex: assignEndIndex!,
-      // content: onAddSpaceLineFormatter(sliceInputValueEnd).join('').trim(),
+      endIndex: newEndIndex,
       content: sliceInputValueEnd,
     }
     console.log('New newList create', newList)
