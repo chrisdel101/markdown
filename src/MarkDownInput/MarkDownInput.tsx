@@ -260,22 +260,22 @@ const MarkDownInput = (props: IProps) => {
     // console.log('ISE', isTyping)
     // console.log('IdebouncedInputValueSE', debouncedInputValue)
 
-    if (debouncedInputValue) {
+    if (debouncedInputValue || cursorIndexes) {
       setIsTyping(true)
     }
     // console.log('ISE', isTyping)
     // else {
     const handler: NodeJS.Timeout = setTimeout(() => {
       setIsTyping(false)
-    }, 500)
+    }, 1000)
     // / Cancel the timeout if value changes (also on delay change or unmount)
     return () => {
       clearTimeout(handler)
     }
     // }
-  }, [debouncedInputValue])
+  }, [debouncedInputValue, cursorIndexes])
   useEffect(() => {
-    // console.log('ISE', isTyping)
+    console.log('ISE', isTyping)
 
     let splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
@@ -327,6 +327,7 @@ const MarkDownInput = (props: IProps) => {
             const insideList = isCursorInsideList(listsArr, cursorIndexes)
             // if not list set button, active, to false
           } else {
+            console.log('ISTyping', isTyping)
             if (!isTyping) {
               splitInputOnNewlines = debouncedInputValue.split('\n')
               console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
