@@ -148,7 +148,7 @@ const cursorWrapperInit: CursorStateWrapper = {
   type: undefined,
 }
 
-function reducer(cursorIndexes: CursorState, action: Action) {
+function cursorStatereducer(cursorIndexes: CursorState, action: Action) {
   // console.log('state b4 update', cursorIndexes);
   // console.log('action', action);
   switch (action.updateType) {
@@ -221,7 +221,11 @@ function init(cursorWrapperInit: CursorStateWrapper) {
   return cursorWrapperInit
 }
 const MarkDownInput = (props: IProps) => {
-  const [cursorIndexes, dispatch] = useReducer(reducer, cursorWrapperInit, init)
+  const [cursorIndexes, dispatch] = useReducer(
+    cursorStatereducer,
+    cursorWrapperInit,
+    init
+  )
   const [activeListIndexState, setActiveListIndexState] =
     useState<ActiveListIndex>(initActiveListIndex)
   const [listsArr, setListsArr] = useState<List[]>([])
@@ -242,41 +246,91 @@ const MarkDownInput = (props: IProps) => {
     previousClick: ClickType.Empty,
     previousInputValue: '',
   })
+  const [lastKeyEvent, setLastKeyEvent] = useState<string>()
+  const [lastClickEvent, setLastClickEvent] = useState<ClickType>()
   const [isTyping, setIsTyping] = useState<boolean>(false)
   const debouncedInputValue = useDebounce(inputValue)
 
   const textRef = useRef<HTMLTextAreaElement | null>(null)
   useEffect(() => {
+    // console.log('TOP isTyping', isTyping)
+    // console.log('lastKeyEvent', lastKeyEvent)
+
     // reset state on empty input
     if (inputValue.length <= 0) {
       resetAllState()
     }
-    // const newListStartIndexes = adjustListIndexes(listsArr, inputValue, activeListIndexState.currentListIndex);
-    // if (newListStartIndexes.length) {
-    //   console.log('new', newListStartIndexes);
-    // }
   }, [inputValue])
   useEffect(() => {
-    // console.log('ISE', isTyping)
-    // console.log('IdebouncedInputValueSE', debouncedInputValue)
-
-    if (debouncedInputValue || cursorIndexes) {
-      setIsTyping(true)
+    console.log('TOP isTyping', isTyping)
+    // console.log('lastKeyEvent', lastKeyEvent)
+    if (buttonState['listOl'] || buttonState['list']) {
+      let splitInputOnNewlines = inputValue.split('\n')
+      const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
+      const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
+      if (!isTyping) {
+        splitInputOnNewlines = debouncedInputValue.split('\n')
+        console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
+        // console.log('splitInputOnNewlines', inputValue.split('\n'))
+        // setTimeout(() => {})
+        const listUpdates = updateList({
+          splitInputOnNewlines,
+          activeListIndexState,
+          listsArr,
+          currentLineNumber: whichLineNumOnNow,
+          cursorIndexes,
+          buttonState,
+        })
+        if (listUpdates !== undefined) {
+          // console.log('listUpdates', listUpdates)
+          // console.log('activeListIndexState', activeListIndexState)
+          // if active we're inside a list
+          if (typeof activeListIndexState.currentListIndex === 'number') {
+            if (listUpdates?._listsArr) {
+              setListsArr(listUpdates?._listsArr)
+            }
+            // were outside a list
+          } else {
+            if (listUpdates?._listsArr) {
+              setListsArr(listUpdates?._listsArr)
+            }
+            if (listUpdates?._buttonState) {
+              setButtonState(listUpdates._buttonState)
+            }
+          }
+        }
+      }
     }
+    // reset state on empty input
+    if (inputValue.length <= 0) {
+      resetAllState()
+    }
+  }, [isTyping])
+  useEffect(() => {
+    console.log('ISE', isTyping)
+    // console.log('IdebouncedInputValueSE', debouncedInputValue)
+    // if (debouncedInputValue || cursorIndexes || buttonState || lastKeyEvent) {
+    setIsTyping(true)
+    // }
     // console.log('ISE', isTyping)
     // else {
     const handler: NodeJS.Timeout = setTimeout(() => {
       setIsTyping(false)
-    }, 1000)
+    }, 300)
     // / Cancel the timeout if value changes (also on delay change or unmount)
+    // console.log('isTyping', isTyping)
     return () => {
       clearTimeout(handler)
     }
     // }
-  }, [debouncedInputValue, cursorIndexes])
+  }, [
+    debouncedInputValue,
+    cursorIndexes,
+    lastKeyEvent,
+    buttonState,
+    lastClickEvent,
+  ])
   useEffect(() => {
-    console.log('ISE', isTyping)
-
     let splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
@@ -320,45 +374,45 @@ const MarkDownInput = (props: IProps) => {
           cursorIndexes?.type !== 'list'
         ) {
           const { currentListIndex } = activeListIndexState
-          console.log('Fired: activeListIndexState', activeListIndexState)
-          console.log('CCC', cursorIndexes)
+          // console.log('Fired: activeListIndexState', activeListIndexState)
+          // console.log('CCC', cursorIndexes)
           // if currentList is active
           if (typeof currentListIndex !== 'number') {
             const insideList = isCursorInsideList(listsArr, cursorIndexes)
             // if not list set button, active, to false
           } else {
-            console.log('ISTyping', isTyping)
-            if (!isTyping) {
-              splitInputOnNewlines = debouncedInputValue.split('\n')
-              console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
-
-              const listUpdates = updateList({
-                splitInputOnNewlines,
-                activeListIndexState,
-                listsArr,
-                currentLineNumber: whichLineNumOnNow,
-                cursorIndexes,
-                buttonState,
-              })
-              if (listUpdates !== undefined) {
-                console.log('listUpdates', listUpdates)
-                console.log('activeListIndexState', activeListIndexState)
-                // if active we're inside a list
-                if (typeof activeListIndexState.currentListIndex === 'number') {
-                  if (listUpdates?._listsArr) {
-                    setListsArr(listUpdates?._listsArr)
-                  }
-                  // were outside a list
-                } else {
-                  if (listUpdates?._listsArr) {
-                    setListsArr(listUpdates?._listsArr)
-                  }
-                  if (listUpdates?._buttonState) {
-                    setButtonState(listUpdates._buttonState)
-                  }
-                }
-              }
-            }
+            // console.log('ISTyping', isTyping)
+            // if (!isTyping) {
+            //   splitInputOnNewlines = debouncedInputValue.split('\n')
+            //   console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
+            //   console.log('splitInputOnNewlines', inputValue.split('\n'))
+            //   const listUpdates = updateList({
+            //     splitInputOnNewlines,
+            //     activeListIndexState,
+            //     listsArr,
+            //     currentLineNumber: whichLineNumOnNow,
+            //     cursorIndexes,
+            //     buttonState,
+            //   })
+            //   if (listUpdates !== undefined) {
+            //     console.log('listUpdates', listUpdates)
+            //     console.log('activeListIndexState', activeListIndexState)
+            //     // if active we're inside a list
+            //     if (typeof activeListIndexState.currentListIndex === 'number') {
+            //       if (listUpdates?._listsArr) {
+            //         setListsArr(listUpdates?._listsArr)
+            //       }
+            //       // were outside a list
+            //     } else {
+            //       if (listUpdates?._listsArr) {
+            //         setListsArr(listUpdates?._listsArr)
+            //       }
+            //       if (listUpdates?._buttonState) {
+            //         setButtonState(listUpdates._buttonState)
+            //       }
+            //     }
+            //   }
+            // }
           }
         }
         // check if we move cursor inside a list
@@ -433,7 +487,7 @@ const MarkDownInput = (props: IProps) => {
       if (updatedListsArr.length) {
         // TODO - make more effiecent
         // const :List[] = updatedListsArr as List[]
-        console.log('---UPDATE LIST----', updatedListsArr)
+        // console.log('---UPDATE LIST----', updatedListsArr)
         // setListsArr(updatedListsArr)
       }
     }
@@ -557,6 +611,7 @@ const MarkDownInput = (props: IProps) => {
       indexesArr,
       cursorIndexes
     )
+    setLastClickEvent(ClickType.Input)
     const splitOnSpacesArr = inputValue.split('')
     // console.log('STR', str, index);
     switch (currentClick) {
@@ -743,7 +798,8 @@ const MarkDownInput = (props: IProps) => {
         break
     }
   }
-  const handleKeyUp = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  function handleKeyUp(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    setLastKeyEvent(event.key)
     const splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     // console.log('indexesArr', indexesArr)
@@ -762,11 +818,11 @@ const MarkDownInput = (props: IProps) => {
       } else if (splitInputOnNewlines[currentLineNumber] === '') {
         return
       } else {
-        console.log('splitInputOnNewlines', splitInputOnNewlines)
-        console.log(
-          `line now: ${currentLineNumber}`,
-          splitInputOnNewlines[currentLineNumber]
-        )
+        // console.log('splitInputOnNewlines', splitInputOnNewlines)
+        // console.log(
+        //   `line now: ${currentLineNumber}`,
+        //   splitInputOnNewlines[currentLineNumber]
+        // )
         // if next item is falsy then breaout of list
         const breakOut = splitInputOnNewlines[currentLineNumber + 1]
           ? false
@@ -850,8 +906,8 @@ const MarkDownInput = (props: IProps) => {
               activeListIndexState,
               buttonState,
             })
-            console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
-            console.log('cursorIndexes', cursorIndexes)
+            // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
+            // console.log('cursorIndexes', cursorIndexes)
             setListsArr(_listsArr)
             setInputValue(_inputValue)
             setButtonState(_buttonState)
