@@ -262,7 +262,7 @@ const MarkDownInput = (props: IProps) => {
     }
   }, [inputValue])
   useEffect(() => {
-    console.log('TOP isTyping', isTyping)
+    // console.log('TOP isTyping', isTyping)
     // console.log('lastKeyEvent', lastKeyEvent)
     if (buttonState['listOl'] || buttonState['list']) {
       let splitInputOnNewlines = inputValue.split('\n')
@@ -270,7 +270,7 @@ const MarkDownInput = (props: IProps) => {
       const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
       if (!isTyping) {
         splitInputOnNewlines = debouncedInputValue.split('\n')
-        console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
+        // console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
         // console.log('splitInputOnNewlines', inputValue.split('\n'))
         // setTimeout(() => {})
         const listUpdates = updateList({
@@ -300,6 +300,19 @@ const MarkDownInput = (props: IProps) => {
           }
         }
       }
+      // cast to get rid of nevers
+      const updatedListsArr: List[] = adjustListIndexes(
+        listsArr,
+        inputValue,
+        activeListIndexState.currentListIndex
+      ) as List[]
+      // returns empty array when no change
+      if (updatedListsArr.length) {
+        // TODO - make more effiecent
+        // const :List[] = updatedListsArr as List[]
+        console.log('---UPDATE LIST----', updatedListsArr)
+        setListsArr(updatedListsArr)
+      }
     }
     // reset state on empty input
     if (inputValue.length <= 0) {
@@ -307,22 +320,15 @@ const MarkDownInput = (props: IProps) => {
     }
   }, [isTyping])
   useEffect(() => {
-    console.log('ISE', isTyping)
-    // console.log('IdebouncedInputValueSE', debouncedInputValue)
-    // if (debouncedInputValue || cursorIndexes || buttonState || lastKeyEvent) {
-    setIsTyping(true)
-    // }
     // console.log('ISE', isTyping)
-    // else {
+    setIsTyping(true)
     const handler: NodeJS.Timeout = setTimeout(() => {
       setIsTyping(false)
     }, 300)
     // / Cancel the timeout if value changes (also on delay change or unmount)
-    // console.log('isTyping', isTyping)
     return () => {
       clearTimeout(handler)
     }
-    // }
   }, [
     debouncedInputValue,
     cursorIndexes,
@@ -368,56 +374,10 @@ const MarkDownInput = (props: IProps) => {
           // console.log('CCC', cursorIndexes?.keyType)
           // console.log('CCC', cursorIndexes?.type)
         }
-        // exclude list newline and breakout
-        else if (
-          cursorIndexes?.keyType !== 'enter' &&
-          cursorIndexes?.type !== 'list'
-        ) {
-          const { currentListIndex } = activeListIndexState
-          // console.log('Fired: activeListIndexState', activeListIndexState)
-          // console.log('CCC', cursorIndexes)
-          // if currentList is active
-          if (typeof currentListIndex !== 'number') {
-            const insideList = isCursorInsideList(listsArr, cursorIndexes)
-            // if not list set button, active, to false
-          } else {
-            // console.log('ISTyping', isTyping)
-            // if (!isTyping) {
-            //   splitInputOnNewlines = debouncedInputValue.split('\n')
-            //   console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
-            //   console.log('splitInputOnNewlines', inputValue.split('\n'))
-            //   const listUpdates = updateList({
-            //     splitInputOnNewlines,
-            //     activeListIndexState,
-            //     listsArr,
-            //     currentLineNumber: whichLineNumOnNow,
-            //     cursorIndexes,
-            //     buttonState,
-            //   })
-            //   if (listUpdates !== undefined) {
-            //     console.log('listUpdates', listUpdates)
-            //     console.log('activeListIndexState', activeListIndexState)
-            //     // if active we're inside a list
-            //     if (typeof activeListIndexState.currentListIndex === 'number') {
-            //       if (listUpdates?._listsArr) {
-            //         setListsArr(listUpdates?._listsArr)
-            //       }
-            //       // were outside a list
-            //     } else {
-            //       if (listUpdates?._listsArr) {
-            //         setListsArr(listUpdates?._listsArr)
-            //       }
-            //       if (listUpdates?._buttonState) {
-            //         setButtonState(listUpdates._buttonState)
-            //       }
-            //     }
-            //   }
-            // }
-          }
-        }
+
         // check if we move cursor inside a list
       } else if (!buttonState['list'] && !buttonState['listOl']) {
-        // console.log('fired ');
+        // console.log('fired ')
         if (cursorIndexes?.type === 'keyup') {
           // console.log('keyup', cursorIndexes?.keyType)
           const keyType: string | undefined = cursorIndexes?.keyType
@@ -487,8 +447,8 @@ const MarkDownInput = (props: IProps) => {
       if (updatedListsArr.length) {
         // TODO - make more effiecent
         // const :List[] = updatedListsArr as List[]
-        // console.log('---UPDATE LIST----', updatedListsArr)
-        // setListsArr(updatedListsArr)
+        console.log('---UPDATE LIST----', updatedListsArr)
+        setListsArr(updatedListsArr)
       }
     }
 

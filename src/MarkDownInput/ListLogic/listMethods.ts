@@ -351,23 +351,23 @@ export const updateList = ({
   console.log('sliceInputValueEnd input', sliceInputValueEnd)
   // console.log('slice off last 2', sliceInputValueStart?.slice(-2))
   //CONTENT: split list content
-  // const splitOnNewLineListContent = currentList.content?.split('\n');
-  // console.log('splitOnNewLineListContent', splitOnNewLineListContent);
   // get each identical section from each source
   const currentLineInputValue = sliceInputValueEnd?.[lineNumInCurrentList]
   const currentLineListContentStr =
     currentList?.content?.[lineNumInCurrentList] || ''
+  console.log('list content', currentList?.content)
+  console.log('currentLineListContentStr', currentLineListContentStr)
   // DIFF: compare list saved content to current page inputValue
   console.log('---@index:', cursorIndexes.startIndex)
   console.log(
-    '---input split currentLineInputValue diff:',
+    '---input split currentLineInputValue split:',
     //@ts-ignore
     currentLineInputValue?.split()
   )
   console.log(
-    '---content split currentLineListContentStr diff:',
+    '---content split currentLineListContentStr split:',
     //@ts-ignore
-    currentLineListContentStr?.split()
+    currentLineListContentStr
   )
   if (currentLineInputValue !== currentLineListContentStr) {
     console.log('CHECKER FOUND DIFF')
