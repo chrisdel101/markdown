@@ -270,7 +270,6 @@ const MarkDownInput = (props: IProps) => {
       })
       return
     }
-    // if (lastKeyEvent?.key === 'Enter') {
     console.log('----------ENTER------------')
     // adjust cursor position to new line
     dispatch({
@@ -283,18 +282,13 @@ const MarkDownInput = (props: IProps) => {
       manageSingleSpaceLogic()
       return
     }
-    // console.log('splitInputOnNewlines', splitInputOnNewlines)
-    // console.log(
-    //   `line now: ${currentLineNumber}`,
-    //   splitInputOnNewlines[currentLineNumber]
-    // )
     // if next item falsy then breaout of list
     const isListBreakPoint = splitInputOnNewlines[currentLineNumber + 1]
       ? false
       : true
     // break out of list - check if previous line has only list index
     if (!isNumber(activeListIndexState.currentListIndex)) return
-    const { listType } = listsArr[activeListIndexState.currentListIndex!]
+    const { _listType } = listsArr[activeListIndexState.currentListIndex!]
     if (
       (regex.isOrderedListItemAloneOnLine.test(
         splitInputOnNewlines[currentLineNumber]
@@ -311,7 +305,7 @@ const MarkDownInput = (props: IProps) => {
         _activeListIndexState,
         _buttonState,
       }: BreakOutListOutput = breakOutList({
-        listType: listType,
+        listType: _listType,
         splitInputOnNewlines,
         currentLineNumber,
         listsArr,
@@ -333,7 +327,7 @@ const MarkDownInput = (props: IProps) => {
       _buttonState,
       _cursorMovestoNextLine,
     }: ContinueListOutput = continueList({
-      listType: listType,
+      listType: _listType,
       splitInputOnNewlines,
       indexesArr,
       listsArr,
@@ -390,59 +384,59 @@ const MarkDownInput = (props: IProps) => {
   useEffect(() => {
     // console.log('TOP isTyping', isTyping)
     // console.log('lastKeyEvent', lastKeyEvent)
-    if (buttonState['listOl'] || buttonState['list']) {
-      let splitInputOnNewlines = inputValue.split('\n')
-      const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
-      const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
-      if (!isTyping) {
-        splitInputOnNewlines = debouncedInputValue.split('\n')
-        // console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
-        // console.log('splitInputOnNewlines', inputValue.split('\n'))
-        // setTimeout(() => {})
-        const listUpdates = updateList({
-          splitInputOnNewlines,
-          activeListIndexState,
-          listsArr,
-          currentLineNumber: whichLineNumOnNow,
-          cursorIndexes,
-          buttonState,
-        })
-        if (listUpdates !== undefined) {
-          // console.log('listUpdates', listUpdates)
-          // console.log('activeListIndexState', activeListIndexState)
-          // if active we're inside a list
-          if (typeof activeListIndexState.currentListIndex === 'number') {
-            if (listUpdates?._listsArr) {
-              setListsArr(listUpdates?._listsArr)
-            }
-            // were outside a list
-          } else {
-            if (listUpdates?._listsArr) {
-              setListsArr(listUpdates?._listsArr)
-            }
-            if (listUpdates?._buttonState) {
-              setButtonState(listUpdates._buttonState)
+    const listUpdate = false
+    //temp switch - remove after dev
+    if (listUpdate) {
+      if (buttonState['listOl'] || buttonState['list']) {
+        let splitInputOnNewlines = inputValue.split('\n')
+        const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
+        const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
+        if (!isTyping) {
+          splitInputOnNewlines = debouncedInputValue.split('\n')
+          console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
+          // console.log('splitInputOnNewlines', inputValue.split('\n'))
+          // setTimeout(() => {})
+          const listUpdates = updateList({
+            splitInputOnNewlines,
+            activeListIndexState,
+            listsArr,
+            currentLineNumber: whichLineNumOnNow,
+            cursorIndexes,
+            buttonState,
+          })
+          if (listUpdates !== undefined) {
+            // console.log('listUpdates', listUpdates)
+            // console.log('activeListIndexState', activeListIndexState)
+            // if active we're inside a list
+            if (typeof activeListIndexState.currentListIndex === 'number') {
+              if (listUpdates?._listsArr) {
+                setListsArr(listUpdates?._listsArr)
+              }
+              // were outside a list
+            } else {
+              if (listUpdates?._listsArr) {
+                setListsArr(listUpdates?._listsArr)
+              }
+              if (listUpdates?._buttonState) {
+                setButtonState(listUpdates._buttonState)
+              }
             }
           }
         }
+        // cast to get rid of nevers
+        const updatedListsArr: List[] = adjustListIndexes(
+          listsArr,
+          inputValue,
+          activeListIndexState.currentListIndex
+        ) as List[]
+        // returns empty array when no change
+        if (updatedListsArr.length) {
+          // TODO - make more effiecent
+          // const :List[] = updatedListsArr as List[]
+          console.log('---UPDATE LIST----', updatedListsArr)
+          setListsArr(updatedListsArr)
+        }
       }
-      // cast to get rid of nevers
-      const updatedListsArr: List[] = adjustListIndexes(
-        listsArr,
-        inputValue,
-        activeListIndexState.currentListIndex
-      ) as List[]
-      // returns empty array when no change
-      if (updatedListsArr.length) {
-        // TODO - make more effiecent
-        // const :List[] = updatedListsArr as List[]
-        console.log('---UPDATE LIST----', updatedListsArr)
-        setListsArr(updatedListsArr)
-      }
-    }
-    // reset state on empty input
-    if (inputValue.length <= 0) {
-      resetAllState()
     }
   }, [isTyping])
   useEffect(() => {
@@ -471,84 +465,60 @@ const MarkDownInput = (props: IProps) => {
     // set currentine when index moves
     setCurrentLineNumber(whichLineNumOnNow)
     // ressaign to debouncer)
-    const listUpdate = true
-    //temp switch - remove after dev
-    if (listUpdate) {
-      if (buttonState['listOl'] || buttonState['list']) {
-        if (
-          cursorIndexes.type === 'mouseup' ||
-          ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(
-            cursorIndexes.keyType ?? ''
-          )
-        ) {
-          // toggle off list if clicked before start of list
-          if (isNumber(activeListIndexState.currentListIndex)) {
-            const currentList = listsArr[activeListIndexState.currentListIndex!]
-            if (cursorIndexes.startIndex < currentList.startIndex) {
-              setButtonState({
-                ...buttonState,
-                [currentList.listType as keyof ButtonState]: false,
-              })
-              setActiveListIndexState({
-                currentListIndex: undefined,
-                prevListIndex: activeListIndexState.currentListIndex,
-              })
-            }
-          }
 
-          // console.log('move before start')
-          // console.log('CCC', cursorIndexes?.keyType)
-          // console.log('CCC', cursorIndexes?.type)
-        }
-
-        // check if we move cursor inside a list
-      } else if (!buttonState['list'] && !buttonState['listOl']) {
-        // console.log('fired ')
-        if (cursorIndexes?.type === 'keyup') {
-          // console.log('keyup', cursorIndexes?.keyType)
-          const keyType: string | undefined = cursorIndexes?.keyType
-          // console.log('keyType', keyType)
-          const keyTypes: string[] = [
-            'ArrowUp',
-            'ArrowDown',
-            'ArrowLeft',
-            'ArrowRight',
-          ]
-          //includes won't work here
-          const checkKey = keyType && keyTypes.indexOf(keyType) !== -1
-          // console.log('check key is arrow', checkKey)
-          if (checkKey) {
-            const insideList = isCursorInsideList(listsArr, cursorIndexes)
-            if (!insideList) return
-            // console.log('activeListIndexState', activeListIndexState)
-            // console.log('INN', insideList);
-            const currentListIndex =
-              insideList && getCurrentListIndex(listsArr, cursorIndexes)
-            if (typeof currentListIndex !== 'number') return
-            const currentList = listsArr && listsArr[currentListIndex]
-            // console.log('currentList', currentList)
-            // console.log('activeListIndexState', activeListIndexState);
-            // set list to active
-            const newActiveListIndexState: ActiveListIndex = {
-              ...activeListIndexState,
-              currentListIndex,
-            }
-            setActiveListIndexState(newActiveListIndexState)
+    if (buttonState['listOl'] || buttonState['list']) {
+      if (
+        cursorIndexes.type === 'mouseup' ||
+        ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(
+          cursorIndexes.keyType ?? ''
+        )
+      ) {
+        // toggle off list if clicked before start of list
+        if (isNumber(activeListIndexState.currentListIndex)) {
+          const currentList = listsArr[activeListIndexState.currentListIndex!]
+          if (cursorIndexes.startIndex < currentList._startIndex) {
             setButtonState({
               ...buttonState,
-              [currentList?.listType as keyof ButtonState]: true,
+              [currentList._listType as keyof ButtonState]: false,
+            })
+            setActiveListIndexState({
+              currentListIndex: undefined,
+              prevListIndex: activeListIndexState.currentListIndex,
             })
           }
-        } else if (cursorIndexes?.type === 'mouseup') {
+        }
+
+        // console.log('move before start')
+        // console.log('CCC', cursorIndexes?.keyType)
+        // console.log('CCC', cursorIndexes?.type)
+      }
+
+      // check if we move cursor inside a list
+    } else if (!buttonState['list'] && !buttonState['listOl']) {
+      // console.log('fired ')
+      if (cursorIndexes?.type === 'keyup') {
+        // console.log('keyup', cursorIndexes?.keyType)
+        const keyType: string | undefined = cursorIndexes?.keyType
+        // console.log('keyType', keyType)
+        const keyTypes: string[] = [
+          'ArrowUp',
+          'ArrowDown',
+          'ArrowLeft',
+          'ArrowRight',
+        ]
+        //includes won't work here
+        const checkKey = keyType && keyTypes.indexOf(keyType) !== -1
+        // console.log('check key is arrow', checkKey)
+        if (checkKey) {
           const insideList = isCursorInsideList(listsArr, cursorIndexes)
           if (!insideList) return
-          // console.log('activeListIndexState', activeListIndexState);
-          console.log('INN', insideList)
+          // console.log('activeListIndexState', activeListIndexState)
+          // console.log('INN', insideList);
           const currentListIndex =
             insideList && getCurrentListIndex(listsArr, cursorIndexes)
           if (typeof currentListIndex !== 'number') return
           const currentList = listsArr && listsArr[currentListIndex]
-          console.log('currentList', currentList)
+          // console.log('currentList', currentList)
           // console.log('activeListIndexState', activeListIndexState);
           // set list to active
           const newActiveListIndexState: ActiveListIndex = {
@@ -558,24 +528,45 @@ const MarkDownInput = (props: IProps) => {
           setActiveListIndexState(newActiveListIndexState)
           setButtonState({
             ...buttonState,
-            [currentList?.listType as keyof ButtonState]: true,
+            [currentList?._listType as keyof ButtonState]: true,
           })
         }
+      } else if (cursorIndexes?.type === 'mouseup') {
+        const insideList = isCursorInsideList(listsArr, cursorIndexes)
+        if (!insideList) return
+        // console.log('activeListIndexState', activeListIndexState);
+        console.log('INN', insideList)
+        const currentListIndex =
+          insideList && getCurrentListIndex(listsArr, cursorIndexes)
+        if (typeof currentListIndex !== 'number') return
+        const currentList = listsArr && listsArr[currentListIndex]
+        console.log('currentList', currentList)
+        // console.log('activeListIndexState', activeListIndexState);
+        // set list to active
+        const newActiveListIndexState: ActiveListIndex = {
+          ...activeListIndexState,
+          currentListIndex,
+        }
+        setActiveListIndexState(newActiveListIndexState)
+        setButtonState({
+          ...buttonState,
+          [currentList?._listType as keyof ButtonState]: true,
+        })
       }
-      // cast to get rid of nevers
-      const updatedListsArr: List[] = adjustListIndexes(
-        listsArr,
-        inputValue,
-        activeListIndexState.currentListIndex
-      ) as List[]
+    }
+    // cast to get rid of nevers
+    const updatedListsArr: List[] = adjustListIndexes(
+      listsArr,
+      inputValue,
+      activeListIndexState.currentListIndex
+    ) as List[]
 
-      // returns empty array when no change
-      if (updatedListsArr.length) {
-        // TODO - make more effiecent
-        // const :List[] = updatedListsArr as List[]
-        // console.log('---UPDATE LIST----', updatedListsArr)
-        setListsArr(updatedListsArr)
-      }
+    // returns empty array when no change
+    if (updatedListsArr.length) {
+      // TODO - make more effiecent
+      // const :List[] = updatedListsArr as List[]
+      // console.log('---UPDATE LIST----', updatedListsArr)
+      setListsArr(updatedListsArr)
     }
 
     // console.log('ref', textRef.current?.selectionStart);

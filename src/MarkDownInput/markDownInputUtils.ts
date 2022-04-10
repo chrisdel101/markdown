@@ -157,9 +157,9 @@ export const getCurrentLineInsideList = (
   cursorIndexes: CursorState
 ) => {
   // console.log('CURRENT', cursorIndexes.startIndex);
-  for (let j = list.lineIndexes.length - 1; j >= 0; j--) {
-    // console.log('index', list.lineIndexes[j]);
-    if (cursorIndexes.startIndex >= list.lineIndexes[j]) {
+  for (let j = list._lineIndexes.length - 1; j >= 0; j--) {
+    // console.log('index', list._lineIndexes[j]);
+    if (cursorIndexes.startIndex >= list._lineIndexes[j]) {
       return j
     }
   }
@@ -198,11 +198,11 @@ export const getStartIndexesOfEachLineArr = (
 export const getListRanges = (listsArr: List[], listsArrParam?: List[]) => {
   if (listsArrParam && listsArrParam.length > 0) {
     return listsArrParam.map((obj) => {
-      return { startIndex: obj.startIndex, endIndex: obj.endIndex }
+      return { startIndex: obj._startIndex, endIndex: obj._endIndex }
     })
   } else if (listsArr.length > 0) {
     return listsArr.map((obj) => {
-      return { startIndex: obj.startIndex, endIndex: obj.endIndex }
+      return { startIndex: obj._startIndex, endIndex: obj._endIndex }
     })
   }
 }
@@ -267,7 +267,7 @@ export const getFirstLineIndex = (
 ) => {
   if (!splitInputOnNewlines || !list) return []
   const indexes = splitInputOnNewlines.flatMap((line: string, i: number) => {
-    if (list?.content?.[0] === line) {
+    if (list?._content?.[0] === line) {
       return [i]
     }
     return []
@@ -290,8 +290,8 @@ export const calculateNewList = (
   splitInputOneNewLines: string[]
 ) => {
   const newStartLine = getFirstLineIndex(splitInputOneNewLines, list)
-  const indexChange = newStartIndex - list.startIndex
-  const lineChange = newStartLine[0] - list.lineNumberStart
+  const indexChange = newStartIndex - list._startIndex
+  const lineChange = newStartLine[0] - list._lineNumberStart
   // console.log('list', list);
   // console.log('newStartLine', newStartLine);
   // console.log('indexChange', indexChange);
@@ -299,10 +299,11 @@ export const calculateNewList = (
 
   let newList: List = {
     ...list,
-    lineNumberStart: list.lineNumberStart + lineChange,
-    startIndex: list.startIndex + indexChange,
-    endIndex: list.endIndex + indexChange,
-    lineIndexes: list.lineIndexes.map((line) => line + lineChange),
+    content: list._content ?? [],
+    _lineNumberStart: list._lineNumberStart + lineChange,
+    _startIndex: list._startIndex + indexChange,
+    endIndex: list._endIndex + indexChange,
+    _lineIndexes: list._lineIndexes.map((line) => line + lineChange),
   }
   // console.log('new list', newList);
   return newList
@@ -328,13 +329,13 @@ export const adjustListIndexes = (
       // console.log('list', list);
       // make sure we don't modify a list we're active in
       if (i !== activeListIndex) {
-        if (list?.content) {
+        if (list?._content) {
           // find the start of list in inputValue
-          const findListStartIndex = inputValue.indexOf(list?.content?.[0])
+          const findListStartIndex = inputValue.indexOf(list?._content?.[0])
           // if indexes don't match then list start has changed
-          if (findListStartIndex !== list.startIndex) {
+          if (findListStartIndex !== list._startIndex) {
             console.log('findListStartIndex', findListStartIndex)
-            console.log('list.startIndex', list.startIndex)
+            console.log('list.startIndex', list._startIndex)
 
             // make new list with values
             const newList = calculateNewList(

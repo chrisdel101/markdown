@@ -60,6 +60,7 @@ export interface ListContructorInput {
   lineIndexes: Array<number>
   listType: ListTypes.list | ListTypes.listOl
   listsArr: List[]
+  itemIndexes?: number[]
 }
 export enum ListTypes {
   listOl = 'listOl',
@@ -101,16 +102,15 @@ enum ListIndexSetter {
   Add = 'add',
   Subtract = 'subtract',
 }
-
 export class List {
-  listNumber?: number
-  itemIndexes: number[]
-  lineNumberStart: number
-  startIndex: number
-  endIndex: number
-  content?: string[]
-  lineIndexes: Array<number>
-  listType: ListTypes.list | ListTypes.listOl
+  _listNumber?: number
+  _lineIndexes: number[]
+  _lineNumberStart: number
+  _startIndex: number
+  _endIndex: number
+  _content: string[] | undefined
+  _itemIndexes: Array<number>
+  _listType: ListTypes.list | ListTypes.listOl
   // setEndIndex: (index: number, type: ListIndexSetter) => void;
   // addItemIndex: (itemIndex: number) => void;
   // writeLineIndexToInput: () => string;
@@ -118,67 +118,78 @@ export class List {
     startIndex,
     endIndex,
     content,
-    lineIndexes,
     lineNumberStart,
     listType,
     listsArr,
+    lineIndexes,
   }: ListContructorInput) {
-    this.startIndex = startIndex
-    this.endIndex = endIndex
-    this.content = content
-    this.lineIndexes = lineIndexes
-    this.lineNumberStart = lineNumberStart
-    this.itemIndexes = [1]
-    this.listType = listType
-    this.listNumber = listsArr.length
+    this._startIndex = startIndex
+    this._endIndex = endIndex
+    this._content = content
+    this._lineIndexes = lineIndexes
+    this._lineNumberStart = lineNumberStart
+    this._itemIndexes = [1]
+    this._listType = listType
+    this._listNumber = listsArr.length
   }
 
-  setEndIndex = (index: number, type: ListIndexSetter) => {
-    console.log('END INEDX', index)
-    console.log('END INEDX', type)
-    console.log('this.endIndex', this.endIndex)
-    // console.log('END INEDX', type);
-    if (type === ListIndexSetter.Set) {
-      const itemIndexLen = ListTypes.list.valueOf()
-        ? `* `.length
-        : `${this.itemIndexes.length}. `.length
-      const newIndex = index + itemIndexLen
-      return newIndex
-    } else if (type === ListIndexSetter.Add) {
-      const newIndex = this.endIndex + index
-      console.log('ADD', newIndex)
-      return newIndex
-    } else if (type === ListIndexSetter.Subtract) {
-      const newIndex = this.endIndex - index
-      console.log('SUB', newIndex)
-      return newIndex
-    }
-    return 0
-  }
+  // setEndIndex = (index: number, type: ListIndexSetter) => {
+  //   console.log('END INEDX', index)
+  //   console.log('END INEDX', type)
+  //   console.log('this.endIndex', this._endIndex)
+  //   // console.log('END INEDX', type);
+  //   if (type === ListIndexSetter.Set) {
+  //     const itemIndexLen = ListTypes.list.valueOf()
+  //       ? `* `.length
+  //       : `${this._itemIndexes.length}. `.length
+  //     const newIndex = index + itemIndexLen
+  //     return newIndex
+  //   } else if (type === ListIndexSetter.Add) {
+  //     const newIndex = this._endIndex + index
+  //     console.log('ADD', newIndex)
+  //     return newIndex
+  //   } else if (type === ListIndexSetter.Subtract) {
+  //     const newIndex = this._endIndex - index
+  //     console.log('SUB', newIndex)
+  //     return newIndex
+  //   }
+  //   return 0
+  // }
   addLineIndex = (lineIndex: number) => {
-    this.lineIndexes.push(lineIndex)
+    this._lineIndexes.push(lineIndex)
   }
   removeLineIndex = () => {
-    this.lineIndexes.pop()
+    this._lineIndexes.pop()
   }
-
+  get content() {
+    return this._content ?? []
+  }
+  set content(strArr: string[]) {
+    this._content = strArr
+  }
+  get endIndex() {
+    return this._endIndex
+  }
+  set endIndex(num: number) {
+    this._endIndex = num
+  }
   addItemIndex = (itemIndex: number) => {
     console.log('THIS', this)
-    console.log('curent', this.itemIndexes)
+    console.log('curent', this._itemIndexes)
     console.log('push item', itemIndex)
-    this.itemIndexes.push(itemIndex)
+    this._itemIndexes.push(itemIndex)
     console.log('THIS', this)
   }
   removeItemIndex = () => {
-    this.itemIndexes.pop()
+    this._itemIndexes.pop()
     console.log('THIS pop', this)
   }
   writeLineIndexToInput = () => {
     // console.log('write line index')
     const lineIndex =
-      this.listType === ListTypes.list.valueOf()
+      this._listType === ListTypes.list.valueOf()
         ? `* `
-        : `${this.itemIndexes.length}. `
+        : `${this._itemIndexes.length}. `
     console.log('writeLineIndexToInput', lineIndex)
     return lineIndex
   }
@@ -293,12 +304,13 @@ export const createList = ({
     listType: ListTypes[listType as keyof typeof ListTypes],
     listsArr,
   })
+  console.log('newList', newList)
 
   const returnValues: CreateListOutput = {
     // _cursorIndexes: { startIndex: newContentStr.length, endIndex: newContentStr.length },
     _cursorIndexes: {
-      startIndex: newList.startIndex + newContentStr.length,
-      endIndex: newList.startIndex + newContentStr.length,
+      startIndex: newList._startIndex + newContentStr.length,
+      endIndex: newList._startIndex + newContentStr.length,
     },
     _listsArr: [...listsArr, newList],
     _inputValue: addNewLineCharsArr.join(''),
@@ -336,16 +348,16 @@ export const updateList = ({
   // console.log('sliceOffStartIndexes', sliceOffStartIndexes);
   if (!currentList) return
   // find what line number of inputValue is within the list
-  let lineNumInCurrentList = currentLineNumber - currentList.lineNumberStart
+  let lineNumInCurrentList = currentLineNumber - currentList._lineNumberStart
   // console.log('lineNumInCurrentList', lineNumInCurrentList);
   // INPUTVALUE: slice arrs of inputValue to match current list
   const sliceInputValueStart = splitInputOnNewlines.slice(
-    currentList.lineNumberStart
+    currentList._lineNumberStart
   )
   // console.log('sliceInputValueStart input', sliceInputValueStart)
   // trim empty arr elements off end
   const sliceInputValueEnd = sliceInputValueStart
-    .slice(0, currentList.itemIndexes?.slice(-1)[0] + 1)
+    .slice(0, currentList._itemIndexes?.slice(-1)[0] + 1)
     .filter(Boolean)
   console.log('sliceInputValueStart input', sliceInputValueStart)
   console.log('sliceInputValueEnd input', sliceInputValueEnd)
@@ -354,8 +366,8 @@ export const updateList = ({
   // get each identical section from each source
   const currentLineInputValue = sliceInputValueEnd?.[lineNumInCurrentList]
   const currentLineListContentStr =
-    currentList?.content?.[lineNumInCurrentList] || ''
-  console.log('list content', currentList?.content)
+    currentList?._content?.[lineNumInCurrentList] || ''
+  console.log('list content', currentList?._content)
   console.log('currentLineListContentStr', currentLineListContentStr)
   // DIFF: compare list saved content to current page inputValue
   console.log('---@index:', cursorIndexes.startIndex)
@@ -375,17 +387,17 @@ export const updateList = ({
     // get length of all lines
     const listContentLength = sliceInputValueEnd.join().length
     // add to start inded to get endIndex
-    const newEndIndex = currentList.startIndex + listContentLength
+    const newEndIndex = currentList._startIndex + listContentLength
     //LINE INDEXES
     // get indexes of current page split inputValue
     let inputLineIndexes = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     // // slice arrs of inputValue to match current list range
     const sliceLineIndexesStart = inputLineIndexes?.slice(
-      currentList.lineNumberStart
+      currentList._lineNumberStart
     )
     const sliceLineIndexesEnd = sliceLineIndexesStart?.slice(
       0,
-      currentList.itemIndexes?.length
+      currentList._itemIndexes?.length
     )
     let newList = {
       ...currentList,
@@ -439,11 +451,11 @@ export const breakOutList = ({
   let currentList = { ...listsArr[activeListIndexState.currentListIndex || 0] }
   console.log('currentList', currentList)
   // assign new endIndex
-  let newEndIndex = currentList.endIndex
+  let newEndIndex = currentList._endIndex
   if (listType === ListTypes.listOl.valueOf()) {
-    newEndIndex = currentList.endIndex && currentList.endIndex - 4
+    newEndIndex = currentList._endIndex && currentList._endIndex - 4
   } else if (listType === ListTypes.list.valueOf()) {
-    newEndIndex = currentList.endIndex && currentList.endIndex - 3
+    newEndIndex = currentList._endIndex && currentList._endIndex - 3
   }
   currentList.removeItemIndex()
   currentList.removeLineIndex()
@@ -453,7 +465,7 @@ export const breakOutList = ({
     //   0,
     //   currentList.itemIndexes.length - 1
     // ),
-    content: currentList.content?.slice(0, -1),
+    content: currentList._content?.slice(0, -1),
     endIndex: newEndIndex,
   }
   console.log('obj', obj)
@@ -462,7 +474,7 @@ export const breakOutList = ({
   listsArrCopy.pop()
   // console.log('CC', listsArrCopy);
   // replace with new copy
-  listsArrCopy.push(obj)
+  // listsArrCopy.push(obj)
   console.log('index end', cursorIndexes.startIndex)
   return {
     _inputValue: newInputValue,
@@ -496,8 +508,9 @@ export const continueList = ({
   //   activeListIndexState.currentListIndex
   // )
   console.log('currentListCopy', currentListCopy)
+  // console.log('currentListCopy', currentListCopy)
 
-  currentListCopy.addItemIndex(currentListCopy.itemIndexes.length + 1)
+  currentListCopy.addItemIndex(currentListCopy._itemIndexes.length + 1)
   console.log('currentListCopy', currentListCopy)
 
   const splitInputOnNewlinesCopy = [...(splitInputOnNewlines || [])]
@@ -519,7 +532,7 @@ export const continueList = ({
     )
   }
   const sliceInputValueStart = splitInputOnNewlinesCopy.slice(
-    currentListCopy.lineNumberStart
+    currentListCopy._lineNumberStart
   )
   // console.log('sliceInputValueStart input', sliceInputValueStart);
   let sliceInputValueEnd = sliceInputValueStart.includes('')
@@ -538,9 +551,9 @@ export const continueList = ({
   console.log('indexesArr', indexesArr)
   currentListCopy.addLineIndex(indexesArr[currentLineNumber + 1])
 
-  console.log('lineIndexes', currentListCopy.lineIndexes)
+  console.log('lineIndexes', currentListCopy._lineIndexes)
   // set basic endIndexs as start of newline - this is default
-  currentListCopy.endIndex = currentListCopy.lineIndexes.slice(-1)[0] || 0
+  currentListCopy._endIndex = currentListCopy._lineIndexes.slice(-1)[0] || 0
   // console.log('currentListCopy.endIndex', currentListCopy.endIndex);
   // console.log('curentListCopy.itemIndexes', currentListCopy.itemIndexes);
   // console.log('indexesArr', indexesArr);
@@ -548,32 +561,34 @@ export const continueList = ({
   // check for midline break - check if 2nd last item is a list index alone on line - like 2 - ['1. ', '2. ', 'hello']
   if (
     regex.isOrderedListItemAloneOnLine.test(
-      newContentArr[currentListCopy.itemIndexes.length - 1]
+      newContentArr[currentListCopy._itemIndexes.length - 1]
     ) ||
     regex.isListItemAloneOnLine.test(
-      newContentArr[currentListCopy.itemIndexes.length - 1]
+      newContentArr[currentListCopy._itemIndexes.length - 1]
     )
   ) {
-    // console.log('check if fired', currentListCopy.itemIndexes.length);
+    // console.log('check if fired', currentListCopy._itemIndexes.length);
     // check if current item after list items is not blank , like hello  - ['1. ', '2. ', 'hello']
-    if (newContentArr[currentListCopy.itemIndexes.length] !== undefined) {
+    if (newContentArr[currentListCopy._itemIndexes.length] !== undefined) {
       // this part should combine w prev - make new content
       // console.log('check if fired2', newContentArr[currentListCopy.itemIndexes.length]);
       // check if first item before current is a list item alone , like 1.  - ['1. ', '2. ', 'hello']
-      if (newContentArr[currentListCopy.itemIndexes.length - 2] !== undefined) {
+      if (
+        newContentArr[currentListCopy._itemIndexes.length - 2] !== undefined
+      ) {
         if (
           regex.isOrderedListItemAloneOnLine.test(
-            newContentArr[currentListCopy.itemIndexes.length - 2]
+            newContentArr[currentListCopy._itemIndexes.length - 2]
           ) ||
           regex.isListItemAloneOnLine.test(
-            newContentArr[currentListCopy.itemIndexes.length - 2]
+            newContentArr[currentListCopy._itemIndexes.length - 2]
           )
         ) {
           // console.log('currentList endIndex', currentListCopy.endIndex);
 
           // trim any list indexes alone on line - trim the 1 - ['1.', '2. hello']
           const itemIndexAlone =
-            newContentArr[currentListCopy.itemIndexes.length - 1]
+            newContentArr[currentListCopy._itemIndexes.length - 1]
           const itemIndexAloneLen = itemIndexAlone.length
           const itemIndexAloneTrimmed = itemIndexAlone.trim()
           const itemIndexAloneTrimmedLen = itemIndexAloneTrimmed.length
@@ -583,44 +598,46 @@ export const continueList = ({
           // console.log('newContentArr', newContentArr);
           // console.log('endIndex b4 trim', currentListCopy.endIndex);
           // insert over top if old version
-          newContentArr[currentListCopy.itemIndexes.length - 1] = itemIndexAlone
+          newContentArr[currentListCopy._itemIndexes.length - 1] =
+            itemIndexAlone
           // console.log('newContentArr ', newContentArr);
           // subtract trimmed amonut from endIndex
-          currentListCopy.endIndex -= amountTrimmed
+          currentListCopy._endIndex -= amountTrimmed
           _cursorMovestoNextLine -= amountTrimmed
           // console.log('endIndex after trim', currentListCopy.endIndex);
         }
       }
       // this means combine the prev item and the current - ['1. ', '2. hello']
       const combineTwoItems = `${
-        newContentArr[currentListCopy.itemIndexes.length - 1]
-      }${newContentArr[currentListCopy.itemIndexes.length]}`
+        newContentArr[currentListCopy._itemIndexes.length - 1]
+      }${newContentArr[currentListCopy._itemIndexes.length]}`
       // console.log('combine', combineTwoItems);
       const addToEndIndex =
-        newContentArr[currentListCopy.itemIndexes.length].length
+        newContentArr[currentListCopy._itemIndexes.length].length
       // console.log('combine', combineTwoItems);
       // insert over top if old first section - insert over 2 - ['1. ', '2. hello'] - ['1. ', '2. hello', 'hello']
-      newContentArr[currentListCopy.itemIndexes.length - 1] = combineTwoItems
+      newContentArr[currentListCopy._itemIndexes.length - 1] = combineTwoItems
       // console.log('newContentArr', newContentArr);
       // delete the old second of 2 sections - ['1. ', '2. hello', empty]
-      delete newContentArr[currentListCopy.itemIndexes.length]
+      delete newContentArr[currentListCopy._itemIndexes.length]
       // console.log('newContentArr', newContentArr);
       // filter out empty slots
       newContentArr = newContentArr.filter(String)
-      currentListCopy.endIndex += addToEndIndex
+      currentListCopy._endIndex += addToEndIndex
       // console.log('end index', currentListCopy.endIndex);
     }
   }
   // console.log('newEndIndex', newEndIndex);
   // console.log('newContentArr', newContentArr);
+  // currentListCopy.endIndex =
 
   const newList = {
     ...currentListCopy,
     content: newContentArr,
     endIndex:
       listType === ListTypes.listOl.valueOf()
-        ? currentListCopy.endIndex + 3
-        : currentListCopy.endIndex + 2,
+        ? currentListCopy._endIndex + 3
+        : currentListCopy._endIndex + 2,
   }
   console.log('newList', newList)
 
