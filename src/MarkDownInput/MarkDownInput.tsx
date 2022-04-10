@@ -319,7 +319,8 @@ const MarkDownInput = (props: IProps) => {
       setButtonState(_buttonState)
       return
     }
-    console.log('indexesArr2', indexesArr)
+    // console.log('indexesArr2', indexesArr)
+    console.log('listsArr', listsArr)
 
     const {
       _listsArr,
