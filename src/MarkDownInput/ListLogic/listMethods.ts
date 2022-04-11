@@ -348,8 +348,8 @@ export const updateList = ({
   buttonState,
 }: UpdateListInput) => {
   console.log('------UDPATE--------')
-  console.log('splitInputOnNewlines input', splitInputOnNewlines)
-  console.log('currentLineNumber', currentLineNumber)
+  // console.log('splitInputOnNewlines input', splitInputOnNewlines)
+  // console.log('currentLineNumber', currentLineNumber)
   // console.log('---@index:', cursorIndexes.startIndex);
 
   // const currentListIndex = getCurrentListIndex() || 0;
@@ -373,16 +373,16 @@ export const updateList = ({
   const sliceInputValueEnd = sliceInputValueStart
     .slice(0, currentList._itemIndexes?.slice(-1)[0] + 1)
     .filter(Boolean)
-  console.log('sliceInputValueStart input', sliceInputValueStart)
-  console.log('sliceInputValueEnd input', sliceInputValueEnd)
+  // console.log('sliceInputValueStart input', sliceInputValueStart)
+  // console.log('sliceInputValueEnd input', sliceInputValueEnd)
   // console.log('slice off last 2', sliceInputValueStart?.slice(-2))
   //CONTENT: split list content
   // get each identical section from each source
   const currentLineInputValue = sliceInputValueEnd?.[lineNumInCurrentList]
   const currentLineListContentStr =
     currentList?.content?.[lineNumInCurrentList] || ''
-  console.log('list content', currentList?.content)
-  console.log('currentLineListContentStr', currentLineListContentStr)
+  // console.log('list content', currentList?.content)
+  // console.log('currentLineListContentStr', currentLineListContentStr)
   // DIFF: compare list saved content to current page inputValue
   console.log('---@index:', cursorIndexes.startIndex)
   console.log(

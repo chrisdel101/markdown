@@ -474,10 +474,16 @@ const MarkDownInput = (props: IProps) => {
           cursorIndexes.keyType ?? ''
         )
       ) {
-        // toggle off list if clicked before start of list
+        // toggle off list if clicked before start of list, or after end
         if (isNumber(activeListIndexState.currentListIndex)) {
           const currentList = listsArr[activeListIndexState.currentListIndex!]
-          if (cursorIndexes.startIndex < currentList.startIndex) {
+          console.log('cursorIndexes.startIndex', cursorIndexes.startIndex)
+          console.log('currentList.startIndex', currentList.startIndex)
+
+          if (
+            cursorIndexes.startIndex < currentList.startIndex ||
+            cursorIndexes.endIndex > currentList.endIndex
+          ) {
             setButtonState({
               ...buttonState,
               [currentList._listType as keyof ButtonState]: false,
@@ -514,7 +520,7 @@ const MarkDownInput = (props: IProps) => {
           const insideList = isCursorInsideList(listsArr, cursorIndexes)
           if (!insideList) return
           // console.log('activeListIndexState', activeListIndexState)
-          // console.log('INN', insideList);
+          console.log('INN', insideList)
           const currentListIndex =
             insideList && getCurrentListIndex(listsArr, cursorIndexes)
           if (typeof currentListIndex !== 'number') return
@@ -567,7 +573,7 @@ const MarkDownInput = (props: IProps) => {
       // TODO - make more effiecent
       // const :List[] = updatedListsArr as List[]
       // console.log('---UPDATE LIST----', updatedListsArr)
-      setListsArr(updatedListsArr)
+      // setListsArr(updatedListsArr)
     }
 
     // console.log('ref', textRef.current?.selectionStart);
@@ -878,249 +884,7 @@ const MarkDownInput = (props: IProps) => {
   }
   function handleKeyUp(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     setLastKeyEvent(event)
-    // const splitInputOnNewlines = inputValue.split('\n')
-    // const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
-    // // console.log('indexesArr', indexesArr)
-
-    // if (event.key === 'Enter') {
-    //   console.log('----------ENTER------------')
-    //   // adjust cursor position to new line
-
-    //   dispatch({
-    //     updateType: DispatchType.Enter,
-    //     refCurrent: textRef.current,
-    //     keyType: event.key,
-    //   })
-    //   if (!buttonState['listOl'] && !buttonState['list']) {
-    //     manageSingleSpaceLogic()
-    //   } else if (splitInputOnNewlines[currentLineNumber] === '') {
-    //     return
-    //   } else {
-    //     // console.log('splitInputOnNewlines', splitInputOnNewlines)
-    //     // console.log(
-    //     //   `line now: ${currentLineNumber}`,
-    //     //   splitInputOnNewlines[currentLineNumber]
-    //     // )
-    //     // if next item is falsy then breaout of list
-    //     const breakOut = splitInputOnNewlines[currentLineNumber + 1]
-    //       ? false
-    //       : true
-    //     // break out of list - check if previous line has only list index
-    //     if (buttonState['listOl']) {
-    //       if (
-    //         regex.isOrderedListItemAloneOnLine.test(
-    //           splitInputOnNewlines[currentLineNumber]
-    //         )
-    //       ) {
-    //         // const breakOut = !!splitInputOnNewlines[currentLineNumber + 1];
-    //         // check that input and list match, this means breakOut- num alone on line and not seprated content after from broken line
-    //         if (breakOut) {
-    //           console.log('BREAKOUT')
-    //           const {
-    //             _inputValue,
-    //             _listsArr,
-    //             _activeListIndexState,
-    //             _buttonState,
-    //           }: BreakOutListOutput = breakOutList({
-    //             listType: ListTypes.listOl,
-    //             splitInputOnNewlines,
-    //             currentLineNumber,
-    //             listsArr,
-    //             activeListIndexState,
-    //             cursorIndexes,
-    //             buttonState,
-    //           })
-    //           setListsArr(_listsArr)
-    //           setInputValue(_inputValue)
-    //           setActiveListIndexState(_activeListIndexState)
-    //           setButtonState(_buttonState)
-    //           return
-    //         } else {
-    //           console.log('indexesArr1', indexesArr)
-
-    //           const {
-    //             _listsArr,
-    //             _inputValue,
-    //             _buttonState,
-    //             _cursorMovestoNextLine,
-    //           }: ContinueListOutput = continueList({
-    //             listType: ListTypes.listOl,
-    //             splitInputOnNewlines,
-    //             indexesArr,
-    //             listsArr,
-    //             currentLineNumber,
-    //             activeListIndexState,
-    //             buttonState,
-    //           })
-    //           console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
-
-    //           setListsArr(_listsArr)
-    //           setInputValue(_inputValue)
-    //           setButtonState(_buttonState)
-    //           updateCursorPositionManually(
-    //             {
-    //               startIndex: cursorIndexes.startIndex + _cursorMovestoNextLine,
-    //               endIndex: cursorIndexes.endIndex + _cursorMovestoNextLine,
-    //             },
-    //             DispatchType.List
-    //           )
-    //         }
-
-    //         // check if current line has text along with list index
-    //       } else {
-    //         console.log('indexesArr2', indexesArr)
-
-    //         const {
-    //           _listsArr,
-    //           _inputValue,
-    //           _buttonState,
-    //           _cursorMovestoNextLine,
-    //         }: ContinueListOutput = continueList({
-    //           listType: ListTypes.listOl,
-    //           splitInputOnNewlines,
-    //           indexesArr,
-    //           listsArr,
-    //           currentLineNumber,
-    //           activeListIndexState,
-    //           buttonState,
-    //         })
-    //         // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
-    //         // console.log('cursorIndexes', cursorIndexes)
-    //         setListsArr(_listsArr)
-    //         setInputValue(_inputValue)
-    //         setButtonState(_buttonState)
-    //         updateCursorPositionManually(
-    //           {
-    //             startIndex: cursorIndexes.startIndex + _cursorMovestoNextLine,
-    //             endIndex: cursorIndexes.endIndex + _cursorMovestoNextLine,
-    //           },
-    //           DispatchType.List
-    //         )
-    //       }
-    //     } else if (buttonState['list']) {
-    //       if (
-    //         regex.isListItemAloneOnLine.test(
-    //           splitInputOnNewlines[currentLineNumber]
-    //         )
-    //       ) {
-    //         console.log('splitInputOnNewlines', splitInputOnNewlines)
-    //         console.log('currentLineNumber', currentLineNumber)
-    //         const breakOut = splitInputOnNewlines[currentLineNumber + 1]
-    //           ? false
-    //           : true
-    //         if (breakOut) {
-    //           console.log('BREAKOUT')
-    //           // break out of list - check if line has only list index
-    //           const {
-    //             _inputValue,
-    //             _listsArr,
-    //             _activeListIndexState,
-    //             _buttonState,
-    //           }: BreakOutListOutput = breakOutList({
-    //             listType: ListTypes.list,
-    //             splitInputOnNewlines,
-    //             currentLineNumber,
-    //             listsArr,
-    //             activeListIndexState,
-    //             cursorIndexes,
-    //             buttonState,
-    //           })
-    //           setActiveListIndexState(_activeListIndexState)
-    //           setListsArr(_listsArr)
-    //           setInputValue(_inputValue)
-    //           setButtonState(_buttonState)
-    //           return
-    //         } else {
-    //           console.log('indexesArr3', indexesArr)
-
-    //           const {
-    //             _listsArr,
-    //             _inputValue,
-    //             _buttonState,
-    //             _cursorMovestoNextLine,
-    //           }: ContinueListOutput = continueList({
-    //             listType: ListTypes.list,
-    //             splitInputOnNewlines,
-    //             indexesArr,
-    //             listsArr,
-    //             currentLineNumber,
-    //             activeListIndexState,
-    //             buttonState,
-    //           })
-    //           setListsArr(_listsArr)
-    //           setInputValue(_inputValue)
-    //           setButtonState(_buttonState)
-    //           updateCursorPositionManually(
-    //             {
-    //               startIndex: cursorIndexes.startIndex + _cursorMovestoNextLine,
-    //               endIndex: cursorIndexes.endIndex + _cursorMovestoNextLine,
-    //             },
-    //             DispatchType.List
-    //           )
-    //         }
-    //         // check if list icon has text along with it
-    //       } else {
-    //         const {
-    //           _listsArr,
-    //           _inputValue,
-    //           _buttonState,
-    //           _cursorMovestoNextLine,
-    //         }: ContinueListOutput = continueList({
-    //           listType: ListTypes.list,
-    //           splitInputOnNewlines,
-    //           indexesArr,
-    //           listsArr,
-    //           currentLineNumber,
-    //           activeListIndexState,
-    //           buttonState,
-    //         })
-    //         setListsArr(_listsArr)
-    //         setInputValue(_inputValue)
-    //         setButtonState(_buttonState)
-    //         updateCursorPositionManually(
-    //           {
-    //             startIndex: cursorIndexes.startIndex + _cursorMovestoNextLine,
-    //             endIndex: cursorIndexes.endIndex + _cursorMovestoNextLine,
-    //           },
-    //           DispatchType.List
-    //         )
-    //       }
-    //     }
-    //   }
-    // } else {
-    //   // all keyups not enter
-    //   dispatch({
-    //     updateType: DispatchType.Keyup,
-    //     refCurrent: textRef.current,
-    //     keyType: event.key,
-    //   })
-    //   if (event.key === 'Backspace' || event.key === 'Delete') {
-    //     // listLogic('delete');
-    //   } else if (
-    //     ['ArrowUp', 'ArrowDown', 'ArrowRight', 'ArrowLeft'].some(
-    //       (key) => key === event.key
-    //     )
-    //   ) {
-    //     // if button off, toggle button true TODO - add mouse
-    //     // if (!buttonState['listOl'] && !buttonState['list']) {
-    //     //   // if (getCurrentListIndex() !== undefined) {
-    //     //   //   let buttonStateCopy = { ...buttonState };
-    //     //   //   buttonStateCopy.listOl = true;
-    //     //   //   setButtonState(buttonStateCopy);
-    //     //   //   let currentList = getCurrentList();
-    //     //   // console.log(' IS INSIDE LIST', isInsideList);
-    //     //   // }
-    //     // } else {
-    //     //   // if button on, perform logic to update conent and indexes
-    //     //   if (buttonState['listOl'] || buttonState['list']) {
-    //     //     console.log('INSIDE LIST');
-    //     //     // listLogic('arrows');
-    //     //   }
-    //     // }
-    //   }
-    // }
   }
-
   return (
     <>
       <StyledRow>
