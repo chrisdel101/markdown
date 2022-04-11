@@ -157,9 +157,9 @@ export const getCurrentLineInsideList = (
   cursorIndexes: CursorState
 ) => {
   // console.log('CURRENT', cursorIndexes.startIndex);
-  for (let j = list._lineIndexes.length - 1; j >= 0; j--) {
-    // console.log('index', list._lineIndexes[j]);
-    if (cursorIndexes.startIndex >= list._lineIndexes[j]) {
+  for (let j = list.lineIndexes.length - 1; j >= 0; j--) {
+    // console.log('index', list.lineIndexes[j]);
+    if (cursorIndexes.startIndex >= list.lineIndexes[j]) {
       return j
     }
   }
@@ -198,11 +198,11 @@ export const getStartIndexesOfEachLineArr = (
 export const getListRanges = (listsArr: List[], listsArrParam?: List[]) => {
   if (listsArrParam && listsArrParam.length > 0) {
     return listsArrParam.map((obj) => {
-      return { startIndex: obj._startIndex, endIndex: obj._endIndex }
+      return { startIndex: obj.startIndex, endIndex: obj.endIndex }
     })
   } else if (listsArr.length > 0) {
     return listsArr.map((obj) => {
-      return { startIndex: obj._startIndex, endIndex: obj._endIndex }
+      return { startIndex: obj.startIndex, endIndex: obj.endIndex }
     })
   }
 }
@@ -267,7 +267,7 @@ export const getFirstLineIndex = (
 ) => {
   if (!splitInputOnNewlines || !list) return []
   const indexes = splitInputOnNewlines.flatMap((line: string, i: number) => {
-    if (list?._content?.[0] === line) {
+    if (list?.content?.[0] === line) {
       return [i]
     }
     return []
@@ -285,26 +285,28 @@ export const getFirstLineIndex = (
 }
 // takes a list + new starting indexes, return updated list
 export const calculateNewList = (
-  list: List,
+  currentList: List,
   newStartIndex: number,
-  splitInputOneNewLines: string[]
+  splitInputOneNewLines: string[],
+  listsArr: List[]
 ) => {
-  const newStartLine = getFirstLineIndex(splitInputOneNewLines, list)
-  const indexChange = newStartIndex - list._startIndex
-  const lineChange = newStartLine[0] - list._lineNumberStart
+  const newStartLine = getFirstLineIndex(splitInputOneNewLines, currentList)
+  const indexChange = newStartIndex - currentList.startIndex
+  const lineChange = newStartLine[0] - currentList._lineNumberStart
   // console.log('list', list);
   // console.log('newStartLine', newStartLine);
   // console.log('indexChange', indexChange);
   // console.log('lineChange', lineChange);
 
-  let newList: List = {
-    ...list,
-    content: list._content ?? [],
-    _lineNumberStart: list._lineNumberStart + lineChange,
-    _startIndex: list._startIndex + indexChange,
-    endIndex: list._endIndex + indexChange,
-    _lineIndexes: list._lineIndexes.map((line) => line + lineChange),
-  }
+  let newList: List = new List({
+    endIndex: currentList.endIndex + indexChange,
+    content: currentList.content ?? [],
+    lineNumberStart: currentList._lineNumberStart + lineChange,
+    startIndex: currentList.startIndex + indexChange,
+    lineIndexes: currentList.lineIndexes.map((line) => line + lineChange),
+    listType: currentList._listType,
+    listsArr,
+  })
   // console.log('new list', newList);
   return newList
 }
@@ -329,19 +331,20 @@ export const adjustListIndexes = (
       // console.log('list', list);
       // make sure we don't modify a list we're active in
       if (i !== activeListIndex) {
-        if (list?._content) {
+        if (list?.content) {
           // find the start of list in inputValue
-          const findListStartIndex = inputValue.indexOf(list?._content?.[0])
+          const findListStartIndex = inputValue.indexOf(list?.content?.[0])
           // if indexes don't match then list start has changed
-          if (findListStartIndex !== list._startIndex) {
+          if (findListStartIndex !== list.startIndex) {
             console.log('findListStartIndex', findListStartIndex)
-            console.log('list.startIndex', list._startIndex)
+            console.log('list.startIndex', list.startIndex)
 
             // make new list with values
             const newList = calculateNewList(
               listsArr[i],
               findListStartIndex,
-              splitInputOnNewlines
+              splitInputOnNewlines,
+              listsArr
             )
             // console.log('new list', newList);
             return newList

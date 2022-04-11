@@ -385,7 +385,7 @@ const MarkDownInput = (props: IProps) => {
   useEffect(() => {
     // console.log('TOP isTyping', isTyping)
     // console.log('lastKeyEvent', lastKeyEvent)
-    const listUpdate = false
+    const listUpdate = true
     //temp switch - remove after dev
     if (listUpdate) {
       if (buttonState['listOl'] || buttonState['list']) {
@@ -477,7 +477,7 @@ const MarkDownInput = (props: IProps) => {
         // toggle off list if clicked before start of list
         if (isNumber(activeListIndexState.currentListIndex)) {
           const currentList = listsArr[activeListIndexState.currentListIndex!]
-          if (cursorIndexes.startIndex < currentList._startIndex) {
+          if (cursorIndexes.startIndex < currentList.startIndex) {
             setButtonState({
               ...buttonState,
               [currentList._listType as keyof ButtonState]: false,
