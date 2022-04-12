@@ -260,7 +260,7 @@ const MarkDownInput = (props: IProps) => {
   useEffect(() => {
     const splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
-    // console.log('indexesArr', indexesArr)
+    console.log('splitInputOnNewlines', splitInputOnNewlines)
     if (lastKeyEvent?.key !== 'Enter') {
       // all keyups not enter
       dispatch({
@@ -286,9 +286,9 @@ const MarkDownInput = (props: IProps) => {
     const isListBreakPoint = splitInputOnNewlines[currentLineNumber + 1]
       ? false
       : true
-    // break out of list - check if previous line has only list index
     if (!isNumber(activeListIndexState.currentListIndex)) return
     const { _listType } = listsArr[activeListIndexState.currentListIndex!]
+    // break out of list - check if previous line has only list index
     if (
       (regex.isOrderedListItemAloneOnLine.test(
         splitInputOnNewlines[currentLineNumber]
@@ -435,7 +435,7 @@ const MarkDownInput = (props: IProps) => {
           // TODO - make more effiecent
           // const :List[] = updatedListsArr as List[]
           console.log('---UPDATE LIST----', updatedListsArr)
-          setListsArr(updatedListsArr)
+          // setListsArr(updatedListsArr)
         }
       }
     }
@@ -677,7 +677,7 @@ const MarkDownInput = (props: IProps) => {
     // format each line of arr
     const formattedArr = onAddSpaceLineFormatter(splitInputOnNewlines)
     setInputValue(formattedArr.join(''))
-    // console.log('HERE');
+    console.log('HERE')
     // dispatch({ updateType:DispatchType.ClickSingleSpaceDispatchType.Click    // setCursorIndexes({ startIndex: cursorIndexes.startIndex + 3, endIndex: cursorIndexes.endIndex + 3 });
     dispatch({
       updateType: 'singleSpace',

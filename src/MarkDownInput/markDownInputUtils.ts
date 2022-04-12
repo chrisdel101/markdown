@@ -48,21 +48,25 @@ export const onAddSpaceLineFormatter = (
   strSplitOnNewLines: string[],
   listType?: ListTypes
 ) => {
+  console.log('listType', listType)
+
   const aloneRegex = (line: string) => {
-    return listType === ListTypes.list
-      ? regex.isListItemAloneOnLine.test(line)
-      : regex.isOrderedListItemAloneOnLine.test(line)
+    return (
+      regex.isListItemAloneOnLine.test(line) ||
+      regex.isOrderedListItemAloneOnLine.test(line)
+    )
   }
   const startRegex = (line: string) => {
-    return listType === ListTypes.list
-      ? regex.isListIndexAtLineStartWithContent.test(line)
-      : regex.isOrderListIndexAtLineStartWithContent.test(line)
+    return (
+      regex.isListIndexAtLineStartWithContent.test(line) ||
+      regex.isOrderListIndexAtLineStartWithContent.test(line)
+    )
   }
   return strSplitOnNewLines.map((line, index) => {
-    // console.log('input', line);
+    console.log('input', line)
     // check to avoid touching blank string at end
     if (strSplitOnNewLines[index + 1] === undefined) return line
-    // if list is part of a list just trim
+    // if line is part of a list just trim
     if (aloneRegex(line)) {
       if (!strSplitOnNewLines[index + 1]) {
         // if next item, like 2, is also a num alone, then prob a broken-up line so add line break after solo digit ['1. ', '2. ', 'hello']
@@ -78,6 +82,9 @@ export const onAddSpaceLineFormatter = (
         return line
       }
     } else if (startRegex(line)) {
+      console.log('here', line)
+      // console.log('here');
+
       return `${line.trim()}\n`
     } else if (regex.lineNotWhiteSpace.test(line)) {
       //  checl if prev item is index item alone, means midline break

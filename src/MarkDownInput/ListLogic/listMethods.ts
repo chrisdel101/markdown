@@ -522,6 +522,7 @@ export const continueList = ({
 }: ContinueListInput): ContinueListOutput => {
   console.log('------MIDDLE--------')
   console.log('splitInputOnNewlines', splitInputOnNewlines)
+  const currentListNumber = activeListIndexState.currentListIndex
   const currentList = listsArr[activeListIndexState.currentListIndex || 0]
 
   console.log('currentList', currentList)
@@ -675,9 +676,23 @@ export const continueList = ({
   // console.log('addNewLineCharsArr', addNewLineCharsArr);
   const _newLineListStr = addNewLineCharsArr.join('')
   // console.log('_newLineListStr', _newLineListStr);
+
   let listsArrCopy = [...listsArr]
-  listsArrCopy.pop()
-  listsArrCopy.push(currentList)
+  if (isNumber(currentListNumber)) {
+    console.log('1', listsArrCopy)
+
+    delete listsArrCopy[currentListNumber!]
+    console.log('2', listsArrCopy)
+
+    listsArrCopy[currentListNumber!] = currentList
+    console.log('3', listsArrCopy)
+  } else {
+    console.log('bottom', listsArrCopy)
+
+    listsArrCopy.push(currentList)
+  }
+  console.log('final', listsArrCopy)
+
   // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
   return {
     _cursorMovestoNextLine,
