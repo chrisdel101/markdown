@@ -431,10 +431,10 @@ const MarkDownInput = (props: IProps) => {
           activeListIndexState.currentListIndex
         ) as List[]
         // returns empty array when no change
-        if (updatedListsArr.length) {
+        if (updatedListsArr && updatedListsArr.length) {
           // TODO - make more effiecent
           // const :List[] = updatedListsArr as List[]
-          console.log('---UPDATE LIST----', updatedListsArr)
+          // console.log('---ADJUST LIST----', updatedListsArr)
           // setListsArr(updatedListsArr)
         }
       }
@@ -569,11 +569,11 @@ const MarkDownInput = (props: IProps) => {
     ) as List[]
 
     // returns empty array when no change
-    if (updatedListsArr.length) {
+    if (updatedListsArr && updatedListsArr.length) {
       // TODO - make more effiecent
       // const :List[] = updatedListsArr as List[]
-      // console.log('---UPDATE LIST----', updatedListsArr)
-      // setListsArr(updatedListsArr)
+      console.log('---ADJUST LIST----', updatedListsArr)
+      setListsArr(updatedListsArr)
     }
 
     // console.log('ref', textRef.current?.selectionStart);

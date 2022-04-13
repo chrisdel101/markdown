@@ -317,6 +317,7 @@ export const calculateNewList = (
   // console.log('new list', newList);
   return newList
 }
+// update the list indexes of other lists
 // use the list in context of inputValue to find indexes
 export const adjustListIndexes = (
   listsArr: List[],
@@ -328,14 +329,14 @@ export const adjustListIndexes = (
   const splitInputOnNewlines = inputValue.split('\n')
   if (listsArr.length) {
     // console.log('------ADJUST--------');
-    // console.log('adjustListIndexes', splitInputOnNewlines);
+    // console.log('adjustListIndexes', splitInputOnNewlines)
   }
   // / loop over startIndexes, retu rn new start indexes if changed
-  const newStartIndexes = listsArr
+  const updatedLists = listsArr
     .map((list, i) => {
-      // console.log('i', i);
-      // console.log('activeListIndex', activeListIndex);
-      // console.log('list', list);
+      // console.log('i', i)
+      // console.log('activeListIndex', activeListIndex)
+      // console.log('list', list)
       // make sure we don't modify a list we're active in
       if (i !== activeListIndex) {
         if (list?.content) {
@@ -343,8 +344,8 @@ export const adjustListIndexes = (
           const findListStartIndex = inputValue.indexOf(list?.content?.[0])
           // if indexes don't match then list start has changed
           if (findListStartIndex !== list.startIndex) {
-            console.log('findListStartIndex', findListStartIndex)
-            console.log('list.startIndex', list.startIndex)
+            // console.log('findListStartIndex', findListStartIndex)
+            // console.log('list.startIndex', list.startIndex)
 
             // make new list with values
             const newList = calculateNewList(
@@ -353,7 +354,7 @@ export const adjustListIndexes = (
               splitInputOnNewlines,
               listsArr
             )
-            // console.log('new list', newList);
+            // console.log('new list', newList)
             return newList
           } //else {
           //   return []
@@ -361,21 +362,24 @@ export const adjustListIndexes = (
         } //else {
         //   return []
         // }
-      } // {
+      } else {
+        // console.log('old list')
+        return list
+      }
       //   return []
       // }
     })
     // https://stackoverflow.com/a/57989288/5972531
     .filter((list): list is List => Boolean(list))
   // })
-
-  // console.log('new', newStartIndexes)
-  return newStartIndexes
-  // if (newStartIndexes?.[0]) {
-  //   listsArr?.[0] && calculateNewList(listsArr[0], newStartIndexes[0], currentLineNumber);
-  // }
-
-  // }
+  // only check if there is more than 1 list
+  if (
+    updatedLists &&
+    updatedLists.length > 1 &&
+    updatedLists.length === listsArr.length
+  ) {
+    return updatedLists
+  }
 }
 export const debounce = (func: (...args: any) => void, wait: number) => {
   let timeout: any
