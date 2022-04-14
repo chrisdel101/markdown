@@ -424,22 +424,22 @@ const MarkDownInput = (props: IProps) => {
             }
           }
         }
-        // cast to get rid of nevers
-        const updatedListsArr: List[] = adjustListIndexes(
-          listsArr,
-          inputValue,
-          activeListIndexState.currentListIndex
-        ) as List[]
-        // returns empty array when no change
-        if (updatedListsArr && updatedListsArr.length) {
-          // TODO - make more effiecent
-          // const :List[] = updatedListsArr as List[]
-          // console.log('---ADJUST LIST----', updatedListsArr)
-          // setListsArr(updatedListsArr)
-        }
+        // // cast to get rid of nevers
+        // const updatedListsArr: List[] = adjustListIndexes(
+        //   listsArr,
+        //   inputValue,
+        //   activeListIndexState.currentListIndex
+        // ) as List[]
+        // // returns empty array when no change
+        // if (updatedListsArr && updatedListsArr.length) {
+        //   // TODO - make more effiecent
+        //   // const :List[] = updatedListsArr as List[]
+        //   console.log('---ADJUST LIST----', updatedListsArr)
+        //   setListsArr(updatedListsArr)
+        // }
       }
     }
-  }, [isTyping])
+  }, [isTyping]) //debounce call after typing stops
   useEffect(() => {
     // console.log('ISE', isTyping)
     setIsTyping(true)
@@ -477,8 +477,8 @@ const MarkDownInput = (props: IProps) => {
         // toggle off list if clicked before start of list, or after end
         if (isNumber(activeListIndexState.currentListIndex)) {
           const currentList = listsArr[activeListIndexState.currentListIndex!]
-          console.log('cursorIndexes.startIndex', cursorIndexes.startIndex)
-          console.log('currentList.startIndex', currentList.startIndex)
+          // console.log('cursorIndexes.startIndex', cursorIndexes.startIndex)
+          // console.log('currentList.startIndex', currentList.startIndex)
 
           if (
             cursorIndexes.startIndex < currentList.startIndex ||

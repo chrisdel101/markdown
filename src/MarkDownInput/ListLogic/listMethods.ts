@@ -6,6 +6,7 @@ import {
   isNumber,
   regex,
   calcEndIndexFromLineLengths,
+  calculateCursorMovestoNextLine,
 } from '../markDownInputUtils'
 
 export interface CreateListInput {
@@ -166,15 +167,15 @@ export class List {
     this._lineIndexes.pop()
   }
   addItemIndex = (itemIndex: number) => {
-    console.log('THIS', this)
-    console.log('curent', this._itemIndexes)
-    console.log('push item', itemIndex)
+    // console.log('THIS', this)
+    // console.log('curent', this._itemIndexes)
+    // console.log('push item', itemIndex)
     this._itemIndexes.push(itemIndex)
-    console.log('THIS', this)
+    // console.log('THIS', this)
   }
   removeItemIndex = () => {
     this._itemIndexes.pop()
-    console.log('THIS pop', this)
+    // console.log('THIS pop', this)
   }
   writeLineIndexToInput = () => {
     // console.log('write line index')
@@ -182,7 +183,7 @@ export class List {
       this._listType === ListTypes.list.valueOf()
         ? `* `
         : `${this._itemIndexes.length}. `
-    console.log('writeLineIndexToInput', lineIndex)
+    // console.log('writeLineIndexToInput', lineIndex)
     return lineIndex
   }
   // setEndIndex = (index: number, type: ListIndexSetter) => {
@@ -531,7 +532,7 @@ export const continueList = ({
   console.log('currentList', currentList)
 
   const splitInputOnNewlinesCopy = [...(splitInputOnNewlines || [])]
-
+  // set default values for cursor to move to next line
   let _cursorMovestoNextLine = listType === ListTypes.list ? 3 : 4
   let newContentArr: string[] = []
   // splice item index into inputValue
@@ -565,13 +566,13 @@ export const continueList = ({
   newContentArr = sliceInputValueEnd
   // console.log('newContentArr', newContentArr);
 
-  console.log('indexesArr', indexesArr)
+  // console.log('indexesArr', indexesArr)
   currentList.addSingleLineIndex(indexesArr[currentLineNumber + 1])
 
-  console.log('lineIndexes', currentList.lineIndexes)
+  // console.log('lineIndexes', currentList.lineIndexes)
   // set basic endIndexs as start of newline - this is default
   currentList.endIndex = currentList.lineIndexes.slice(-1)[0] || 0
-  console.log('default endIndex', currentList.endIndex)
+  // console.log('default endIndex', currentList.endIndex)
 
   // console.log('curentListCopy.itemIndexes', currentList.itemIndexes);
   // console.log('indexesArr', indexesArr);
@@ -667,31 +668,32 @@ export const continueList = ({
   //       ? currentList.endIndex + 3
   //       : currentList.endIndex + 2,
   // }
-  console.log('newList', currentList)
+  // console.log('newList', currentList)
 
   const addNewLineCharsArr = onAddSpaceLineFormatter(
     splitInputOnNewlinesCopy,
     listType
   )
-  // console.log('addNewLineCharsArr', addNewLineCharsArr);
+  console.log('addNewLineCharsArr', addNewLineCharsArr)
   const _newLineListStr = addNewLineCharsArr.join('')
   // console.log('_newLineListStr', _newLineListStr);
-
+  const move = calculateCursorMovestoNextLine(_newLineListStr, currentList)
+  console.log('move', move)
   let listsArrCopy = [...listsArr]
   if (isNumber(currentListNumber)) {
-    console.log('1', listsArrCopy)
+    // console.log('1', listsArrCopy)
 
     delete listsArrCopy[currentListNumber!]
-    console.log('2', listsArrCopy)
+    // console.log('2', listsArrCopy)
 
     listsArrCopy[currentListNumber!] = currentList
-    console.log('3', listsArrCopy)
+    // console.log('3', listsArrCopy)
   } else {
-    console.log('bottom', listsArrCopy)
+    // console.log('bottom', listsArrCopy)
 
     listsArrCopy.push(currentList)
   }
-  console.log('final', listsArrCopy)
+  // console.log('final', listsArrCopy)
 
   // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
   return {

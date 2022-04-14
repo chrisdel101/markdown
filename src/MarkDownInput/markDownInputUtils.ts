@@ -63,7 +63,7 @@ export const onAddSpaceLineFormatter = (
     )
   }
   return strSplitOnNewLines.map((line, index) => {
-    console.log('input', line)
+    // console.log('input', line)
     // check to avoid touching blank string at end
     if (strSplitOnNewLines[index + 1] === undefined) return line
     // if line is part of a list just trim
@@ -78,11 +78,11 @@ export const onAddSpaceLineFormatter = (
       } else if (startRegex(strSplitOnNewLines[index + 1])) {
         return `${line.trim()}\n`
       } else {
-        console.log('item alone   ', line)
+        // console.log('item alone   ', line)
         return line
       }
     } else if (startRegex(line)) {
-      console.log('here', line)
+      // console.log('here', line)
       // console.log('here');
 
       return `${line.trim()}\n`
@@ -344,8 +344,8 @@ export const adjustListIndexes = (
           const findListStartIndex = inputValue.indexOf(list?.content?.[0])
           // if indexes don't match then list start has changed
           if (findListStartIndex !== list.startIndex) {
-            // console.log('findListStartIndex', findListStartIndex)
-            // console.log('list.startIndex', list.startIndex)
+            console.log('findListStartIndex', findListStartIndex)
+            console.log('list.startIndex', list.startIndex)
 
             // make new list with values
             const newList = calculateNewList(
@@ -354,18 +354,19 @@ export const adjustListIndexes = (
               splitInputOnNewlines,
               listsArr
             )
-            // console.log('new list', newList)
+            console.log('new list', newList)
             return newList
-          } //else {
-          //   return []
-          // }
+          } else {
+            console.log('NO ADJUSTMENT')
+            //   return []
+          }
         } //else {
         //   return []
         // }
-      } else {
-        // console.log('old list')
-        return list
-      }
+      } //else {
+      // console.log('old list')
+      // return list
+      // }
       //   return []
       // }
     })
@@ -373,13 +374,21 @@ export const adjustListIndexes = (
     .filter((list): list is List => Boolean(list))
   // })
   // only check if there is more than 1 list
-  if (
-    updatedLists &&
-    updatedLists.length > 1 &&
-    updatedLists.length === listsArr.length
-  ) {
-    return updatedLists
-  }
+  // if (
+  //   updatedLists &&
+  //   updatedLists.length > 1 &&
+  //   updatedLists.length === listsArr.length
+  // ) {
+  console.log('updatedLists', updatedLists)
+
+  //   return updatedLists
+  // }
+  return updatedLists
+  // if (newStartIndexes?.[0]) {
+  //   listsArr?.[0] && calculateNewList(listsArr[0], newStartIndexes[0], currentLineNumber);
+  // }
+
+  // }
 }
 export const debounce = (func: (...args: any) => void, wait: number) => {
   let timeout: any
@@ -396,3 +405,14 @@ export const debounce = (func: (...args: any) => void, wait: number) => {
   }
 }
 export const calcEndIndexFromLineLengths = (listLineIndexes: number[]) => {}
+
+export const calculateCursorMovestoNextLine = (
+  formattedInputVal: string,
+  currentList: List
+) => {
+  console.log('formattedInputVal', formattedInputVal)
+  console.log('currentList', currentList)
+  const { content } = currentList
+  const startIndex = formattedInputVal.indexOf(content[0])
+  console.log('startIndex', startIndex)
+}
