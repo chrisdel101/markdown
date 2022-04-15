@@ -1,5 +1,6 @@
 import { CursorState, ButtonState } from './MarkDownInput'
 import { List, ListTypes } from './ListLogic/listMethods'
+import { format } from 'path'
 
 export const regex = {
   isOrderListIndexAtLineStartWithContent: /^\d+\.\s\w+/,
@@ -48,8 +49,6 @@ export const onAddSpaceLineFormatter = (
   strSplitOnNewLines: string[],
   listType?: ListTypes
 ) => {
-  console.log('listType', listType)
-
   const aloneRegex = (line: string) => {
     return (
       regex.isListItemAloneOnLine.test(line) ||
@@ -163,9 +162,9 @@ export const getCurrentLineInsideList = (
   list: List,
   cursorIndexes: CursorState
 ) => {
-  // console.log('CURRENT', cursorIndexes.startIndex);
+  console.log('CURRENT', cursorIndexes.startIndex)
   for (let j = list.lineIndexes.length - 1; j >= 0; j--) {
-    // console.log('index', list.lineIndexes[j]);
+    console.log('index', list.lineIndexes[j])
     if (cursorIndexes.startIndex >= list.lineIndexes[j]) {
       return j
     }
@@ -404,15 +403,61 @@ export const debounce = (func: (...args: any) => void, wait: number) => {
     timeout = setTimeout(later, wait)
   }
 }
-export const calcEndIndexFromLineLengths = (listLineIndexes: number[]) => {}
 
-export const calculateCursorMovestoNextLine = (
+export const calculateCursorMoveIndex = (
   formattedInputVal: string,
-  currentList: List
+  currentList: List,
+  cursorIndexes: CursorState,
+  currentLineNumber: number,
+  splitInputOneNewLines: string[]
 ) => {
-  console.log('formattedInputVal', formattedInputVal)
-  console.log('currentList', currentList)
   const { content } = currentList
-  const startIndex = formattedInputVal.indexOf(content[0])
-  console.log('startIndex', startIndex)
+  const newSplitInputOnNewlines = formattedInputVal.split('\n')
+  console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
+  const newIndexArrs = getStartIndexesOfEachLineArr(newSplitInputOnNewlines, 1)
+  console.log('newIndexArrs', newIndexArrs)
+
+  // get new starIndex of list
+  const newStartIndex = formattedInputVal.indexOf(content[0])
+  // using stale currentIndex, re-vamp to find it in within new input
+  const staleStartIndex = cursorIndexes.startIndex
+  // extract content from old content
+  const startDiff = newStartIndex - staleStartIndex
+
+  const extractLineContent = splitInputOneNewLines[currentLineNumber]
+  // find index inside of old inputValue
+  const oldLineStartIndex = splitInputOneNewLines
+    .join('')
+    .indexOf(extractLineContent)
+  // find index inside newSplitInputOnNewlines
+  const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
+  console.log('extractLineContent', extractLineContent)
+  console.log('oldLineStartIndex', oldLineStartIndex)
+  console.log('newLineStartIndex', newLineStartIndex)
+
+  const newCursorState: CursorState = {
+    startIndex: cursorIndexes.startIndex + startDiff,
+    endIndex: cursorIndexes.endIndex + startDiff,
+  }
+  const newCurrentLineNumber = getCurrentLine(newIndexArrs, newCursorState)
+  // get length of the line
+  const newCurrentLine = newSplitInputOnNewlines[newCurrentLineNumber]
+  console.log('newCurrentLine', newCurrentLine)
+
+  const newCurrentLineLength =
+    newSplitInputOnNewlines[newCurrentLineNumber].length
+  // add line length to curent index, should be line start
+  const newEndOfLineIndex = newLineStartIndex + newCurrentLineLength
+  console.log('end of curent line', newEndOfLineIndex)
+  console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
+  console.log('newStartIndex', newStartIndex)
+  console.log('newCurrentLineNumber', newCurrentLineNumber)
+  console.log('newCurrentLineLength', newCurrentLineLength)
+  if (currentList._listType === ListTypes.list) {
+    return newEndOfLineIndex + 3
+  } else if (currentList._listType === ListTypes.listOl) {
+    return newEndOfLineIndex + 4
+  } else {
+    console.error('Invalid list type in')
+  }
 }

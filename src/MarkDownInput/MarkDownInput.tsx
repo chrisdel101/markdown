@@ -335,9 +335,10 @@ const MarkDownInput = (props: IProps) => {
       currentLineNumber,
       activeListIndexState,
       buttonState,
+      cursorIndexes,
     })
     // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
-    // console.log('cursorIndexes', cursorIndexes)
+    console.log('cursorIndexes', cursorIndexes)
     setListsArr(_listsArr)
     setInputValue(_inputValue)
     setButtonState(_buttonState)
