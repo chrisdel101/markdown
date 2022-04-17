@@ -40,6 +40,7 @@ export interface ContinueListInput {
   indexesArr: number[]
   currentList?: List
   cursorIndexes: CursorState
+  inputValue: string
 }
 export interface ListContructorInput {
   lineNumberStart: number
@@ -60,6 +61,7 @@ export enum ListSymbols {
   list = 'list',
 }
 export interface ContinueListOutput {
+  _newCursorIndex?: number
   _cursorMovestoNextLine: number
   _buttonState: ButtonState
   _listsArr: List[]
@@ -141,9 +143,9 @@ export class List {
     this._listType = listType
     this._listNumber = listsArr.length
     this.addItemIndex = (itemIndex: number) => {
-      console.log('THIS', this)
+      // console.log('THIS', this)
       // console.log('curent', this._itemIndexes)
-      console.log('push item', itemIndex)
+      // console.log('push item', itemIndex)
       this._itemIndexes.push(itemIndex)
       // console.log('THIS', this)
     }
@@ -550,22 +552,26 @@ export const continueList = ({
   splitInputOnNewlines,
   buttonState,
   cursorIndexes,
+  inputValue,
 }: ContinueListInput): ContinueListOutput => {
   console.log('------MIDDLE--------')
   console.log('splitInputOnNewlines', splitInputOnNewlines)
   const currentListNumber = activeListIndexState.currentListIndex
   const currentList = listsArr[activeListIndexState.currentListIndex || 0]
 
+  const symbolLength = currentList.indexSymbolLength()
+  // console.log('symbolLength', symbolLength)
+
   console.log('currentList', currentList)
-  console.log('currentList', currentList.itemIndexes)
-  console.log('currentList', currentList.itemIndexes.length + 1)
+  // console.log('currentList', currentList.itemIndexes)
+  // console.log('currentList', currentList.itemIndexes.length + 1)
 
   currentList.addItemIndex(currentList.itemIndexes.length + 1)
-  console.log('currentList', currentList)
+  // console.log('currentList', currentList)
 
   const splitInputOnNewlinesCopy = [...(splitInputOnNewlines || [])]
   // set default values for cursor to move to next line
-  let _cursorMovestoNextLine = listType === ListTypes.list ? 3 : 4
+  let _cursorMovestoNextLine = symbolLength
   let newContentArr: string[] = []
   // splice item index into inputValue
   if (listType === ListTypes.listOl.valueOf()) {
@@ -592,8 +598,8 @@ export const continueList = ({
         .filter(Boolean)
     : // else its the start of the list so make the same
       sliceInputValueStart
-  console.log('sliceInputValueStart input', sliceInputValueStart)
-  console.log('sliceInputValueEnd input', sliceInputValueEnd)
+  // console.log('sliceInputValueStart input', sliceInputValueStart)
+  // console.log('sliceInputValueEnd input', sliceInputValueEnd)
   // newContentArr = `${currentList.content}\n${currentList.itemIndexes?.slice(-1)[0] + 1}. `;
   newContentArr = sliceInputValueEnd
   // console.log('newContentArr', newContentArr);
@@ -602,7 +608,7 @@ export const continueList = ({
   currentList.addSingleLineIndex(indexesArr[currentLineNumber + 1])
 
   // console.log('lineIndexes', currentList.lineIndexes)
-  // set basic endIndexs as start of newline - this is default
+  // set BASIC endIndexs as start of newline - this is default
   currentList.endIndex = currentList.lineIndexes.slice(-1)[0] || 0
   // console.log('default endIndex', currentList.endIndex)
 
@@ -622,10 +628,10 @@ export const continueList = ({
     // check if current item after list items is not blank , like hello  - ['1. ', '2. ', 'hello']
     if (newContentArr[currentList.itemIndexes.length] !== undefined) {
       // this part should combine w prev - make new content
-      console.log(
-        'check if fired2',
-        newContentArr[currentList.itemIndexes.length]
-      )
+      // console.log(
+      //   'check if fired2',
+      //   newContentArr[currentList.itemIndexes.length]
+      // )
       // when cursor is on first char of line or before 1 .hello - before h
       // check if first item before current is a list item alone , like 1.  - ['1. ', '2. ', 'hello']
       if (newContentArr[currentList.itemIndexes.length - 2] !== undefined) {
@@ -638,7 +644,7 @@ export const continueList = ({
           )
         ) {
           // console.log('currentList endIndex', currentList.endIndex);
-          console.log('check if fired3')
+          // console.log('check if fired3')
 
           // trim any list indexes alone on line - trim the 1 - ['1.', '2. hello']
           const itemIndexAlone =
@@ -647,10 +653,10 @@ export const continueList = ({
           const itemIndexAloneTrimmed = itemIndexAlone.trim()
           const itemIndexAloneTrimmedLen = itemIndexAloneTrimmed.length
           const amountTrimmed = itemIndexAloneLen - itemIndexAloneTrimmedLen
-          console.log('trim', itemIndexAlone)
-          console.log('amountTrimmed', amountTrimmed)
-          console.log('newContentArr', newContentArr)
-          console.log('endIndex b4 trim', currentList.endIndex)
+          // console.log('trim', itemIndexAlone)
+          // console.log('amountTrimmed', amountTrimmed)
+          // console.log('newContentArr', newContentArr)
+          // console.log('endIndex b4 trim', currentList.endIndex)
           // insert over top if old version
           newContentArr[currentList.itemIndexes.length - 1] = itemIndexAlone
           // console.log('newContentArr ', newContentArr);
@@ -658,18 +664,18 @@ export const continueList = ({
           const trimmedEndIndex = currentList.endIndex - amountTrimmed
           currentList.endIndex = trimmedEndIndex
           _cursorMovestoNextLine -= amountTrimmed
-          console.log('endIndex after trim', currentList.endIndex)
+          // console.log('endIndex after trim', currentList.endIndex)
         }
       }
       // when cursor is after first char of line 1. hello - after h
       // this means combine the prev item and the current - ['1. ', '2. hello']
-      console.log('check if fired4')
+      // console.log('check if fired4')
       const combineTwoItems = `${
         newContentArr[currentList.itemIndexes.length - 1]
       }${newContentArr[currentList.itemIndexes.length]}`
       // console.log('combine', combineTwoItems);
       const addToEndIndex = newContentArr[currentList.itemIndexes.length].length
-      console.log('combine', combineTwoItems)
+      // console.log('combine', combineTwoItems)
       // insert over top if old first section - insert over 2 - ['1. ', '2. hello'] - ['1. ', '2. hello', 'hello']
       newContentArr[currentList.itemIndexes.length - 1] = combineTwoItems
       // console.log('newContentArr', newContentArr);
@@ -680,17 +686,18 @@ export const continueList = ({
       newContentArr = newContentArr.filter(String)
       const addedToEndIndex = currentList.endIndex + addToEndIndex
       currentList.endIndex = addedToEndIndex
-      console.log('end index', currentList.endIndex)
+      // console.log('end index', currentList.endIndex)
     }
   }
 
   // console.log('newEndIndex', newEndIndex);
   // console.log('newContentArr', newContentArr);
+
   currentList.content = newContentArr
   currentList.endIndex =
     listType === ListTypes.listOl.valueOf()
-      ? currentList.endIndex + 3
-      : currentList.endIndex + 2
+      ? currentList.endIndex + symbolLength - 1
+      : currentList.endIndex + symbolLength - 1
   // const newList = {
   //   ...currentList,
   //   content: newContentArr,
@@ -699,7 +706,7 @@ export const continueList = ({
   //       ? currentList.endIndex + 3
   //       : currentList.endIndex + 2,
   // }
-  // console.log('newList', currentList)
+  console.log('newList', currentList)
 
   const addNewLineCharsArr = onAddSpaceLineFormatter(
     splitInputOnNewlinesCopy,
@@ -708,14 +715,15 @@ export const continueList = ({
   console.log('addNewLineCharsArr', addNewLineCharsArr)
   const _newLineListStr = addNewLineCharsArr.join('')
   // console.log('_newLineListStr', _newLineListStr);
-  const moveToIndex = calculateCursorMoveIndex(
+  const newCursorIndex = calculateCursorMoveIndex(
     _newLineListStr,
     currentList,
     cursorIndexes,
     currentLineNumber,
-    splitInputOnNewlines
+    splitInputOnNewlines,
+    inputValue
   )
-  console.log('moveToIndex', moveToIndex)
+  console.log('newCursorIndex', newCursorIndex)
   let listsArrCopy = [...listsArr]
   if (isNumber(currentListNumber)) {
     // console.log('1', listsArrCopy)
@@ -734,7 +742,8 @@ export const continueList = ({
 
   // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
   return {
-    _cursorMovestoNextLine: moveToIndex || _cursorMovestoNextLine,
+    _cursorMovestoNextLine: _cursorMovestoNextLine,
+    _newCursorIndex: newCursorIndex,
     _listsArr: listsArrCopy,
     _inputValue: _newLineListStr,
     _buttonState: buttonState,

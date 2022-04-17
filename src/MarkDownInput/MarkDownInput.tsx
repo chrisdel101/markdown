@@ -327,6 +327,7 @@ const MarkDownInput = (props: IProps) => {
       _inputValue,
       _buttonState,
       _cursorMovestoNextLine,
+      _newCursorIndex,
     }: ContinueListOutput = continueList({
       listType,
       splitInputOnNewlines,
@@ -336,16 +337,20 @@ const MarkDownInput = (props: IProps) => {
       activeListIndexState,
       buttonState,
       cursorIndexes,
+      inputValue,
     })
-    // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
+    console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
+    console.log('_newCursorIndex', _newCursorIndex)
     console.log('cursorIndexes', cursorIndexes)
     setListsArr(_listsArr)
     setInputValue(_inputValue)
     setButtonState(_buttonState)
     updateCursorPositionManually(
       {
-        startIndex: cursorIndexes.startIndex + _cursorMovestoNextLine,
-        endIndex: cursorIndexes.endIndex + _cursorMovestoNextLine,
+        startIndex:
+          _newCursorIndex ?? cursorIndexes.startIndex + _cursorMovestoNextLine,
+        endIndex:
+          _newCursorIndex ?? cursorIndexes.endIndex + _cursorMovestoNextLine,
       },
       DispatchType.List
     )
@@ -573,8 +578,8 @@ const MarkDownInput = (props: IProps) => {
     if (updatedListsArr && updatedListsArr.length) {
       // TODO - make more effiecent
       // const :List[] = updatedListsArr as List[]
-      console.log('---ADJUST LIST----', updatedListsArr)
-      setListsArr(updatedListsArr)
+      // console.log('---ADJUST LIST----', updatedListsArr)
+      // setListsArr(updatedListsArr)
     }
 
     // console.log('ref', textRef.current?.selectionStart);

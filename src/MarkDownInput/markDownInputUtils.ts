@@ -411,32 +411,45 @@ export const calculateCursorMoveIndex = (
   currentList: List,
   cursorIndexes: CursorState,
   currentLineNumber: number,
-  splitInputOneNewLines: string[]
+  splitInputOneNewLines: string[],
+  currentInputValue: string
 ) => {
-  const { content } = currentList
+  const { content, startIndex } = currentList
   const newSplitInputOnNewlines = formattedInputVal.split('\n')
-  // console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
+  console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
+  console.log('splitInputOneNewLines', splitInputOneNewLines)
   const newIndexArrs = getStartIndexesOfEachLineArr(newSplitInputOnNewlines, 1)
-  // console.log('newIndexArrs', newIndexArrs)
+  console.log('newIndexArrs', newIndexArrs)
 
-  // get new starIndex of list
-  const newStartIndex = formattedInputVal.indexOf(content[0])
-  // using stale currentIndex, re-vamp to find it in within new input
-  const staleStartIndex = cursorIndexes.startIndex
-  // extract content from old content
-  const startDiff = newStartIndex - staleStartIndex
+  // get new starIndex of list by matching content to string
+  const newListStartIndex = formattedInputVal.indexOf(content[0])
+  console.log('newListStartIndex', newListStartIndex)
+  const staleListStartIndex = startIndex
+  console.log('staleStartIndex', staleListStartIndex)
 
-  const extractLineContent = splitInputOneNewLines[currentLineNumber]
-  // find index inside of old inputValue
-  const oldLineStartIndex = splitInputOneNewLines
-    .join('')
-    .indexOf(extractLineContent)
+  // // extract content from old content
+  // const startDiff = newListStartIndex - staleListStartIndex
+  // console.log('startDiff', startDiff)
+
+  // const extractLineContent = splitInputOneNewLines[currentLineNumber]
+  // // find index inside of old inputValue
+  // const oldListStartIndex = currentInputValue.indexOf(extractLineContent)
+  // // //@ts-ignore
+  // console.log('old', oldListStartIndex)
+  // //@ts-ignore
+  // console.log('new', formattedInputVal.split())
   // find index inside newSplitInputOnNewlines
-  const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
+  // const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
   // console.log('extractLineContent', extractLineContent)
-  // console.log('oldLineStartIndex', oldLineStartIndex)
+  // console.log('oldListStartIndex', oldListStartIndex)
   // console.log('newLineStartIndex', newLineStartIndex)
-
+  if (staleListStartIndex === newListStartIndex) {
+    console.log('NO CURSOR ADJ NEEDED')
+    return
+  }
+  console.log('CURSOR ADJ NEEDED')
+  const startDiff = newListStartIndex - staleListStartIndex
+  console.log('startDiff', startDiff)
   const newCursorState: CursorState = {
     startIndex: cursorIndexes.startIndex + startDiff,
     endIndex: cursorIndexes.endIndex + startDiff,
@@ -446,21 +459,26 @@ export const calculateCursorMoveIndex = (
   const newCurrentLine = newSplitInputOnNewlines[newCurrentLineNumber]
   console.log('newCurrentLine', newCurrentLine)
 
+  const extractLineContent = splitInputOneNewLines[currentLineNumber]
+  console.log('extractLineContent', extractLineContent)
+  const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
+  console.log('newLineStartIndex', newLineStartIndex)
+
   const newCurrentLineLength =
     newSplitInputOnNewlines[newCurrentLineNumber].length
   // add line length to curent index, should be line start
   const newEndOfLineIndex = newLineStartIndex + newCurrentLineLength
-  // console.log('end of curent line', newEndOfLineIndex)
+  console.log('end of curent line', newEndOfLineIndex)
   // console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
-  // console.log('newStartIndex', newStartIndex)
-  // console.log('newCurrentLineNumber', newCurrentLineNumber)
+  // console.log('newListStartIndex', newListStartIndex)
+  console.log('newCurrentLineNumber', newCurrentLineNumber)
   // console.log('newCurrentLineLength', newCurrentLineLength)
   const symbolLength = currentList.indexSymbolLength()
   console.log('symbolLength', symbolLength)
   if (currentList.listType === ListTypes.list) {
-    return newEndOfLineIndex + 3
+    return newEndOfLineIndex + symbolLength
   } else if (currentList.listType === ListTypes.listOl) {
-    return newEndOfLineIndex + 4
+    return newEndOfLineIndex + symbolLength
   } else {
     console.error('Invalid list type in')
   }
