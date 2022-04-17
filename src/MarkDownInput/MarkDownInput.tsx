@@ -287,7 +287,7 @@ const MarkDownInput = (props: IProps) => {
       ? false
       : true
     if (!isNumber(activeListIndexState.currentListIndex)) return
-    const { _listType } = listsArr[activeListIndexState.currentListIndex!]
+    const { listType } = listsArr[activeListIndexState.currentListIndex!]
     // break out of list - check if previous line has only list index
     if (
       (regex.isOrderedListItemAloneOnLine.test(
@@ -305,7 +305,7 @@ const MarkDownInput = (props: IProps) => {
         _activeListIndexState,
         _buttonState,
       }: BreakOutListOutput = breakOutList({
-        listType: _listType,
+        listType,
         splitInputOnNewlines,
         currentLineNumber,
         listsArr,
@@ -328,7 +328,7 @@ const MarkDownInput = (props: IProps) => {
       _buttonState,
       _cursorMovestoNextLine,
     }: ContinueListOutput = continueList({
-      listType: _listType,
+      listType,
       splitInputOnNewlines,
       indexesArr,
       listsArr,
@@ -487,7 +487,7 @@ const MarkDownInput = (props: IProps) => {
           ) {
             setButtonState({
               ...buttonState,
-              [currentList._listType as keyof ButtonState]: false,
+              [currentList.listType as keyof ButtonState]: false,
             })
             setActiveListIndexState({
               currentListIndex: undefined,
@@ -536,7 +536,7 @@ const MarkDownInput = (props: IProps) => {
           setActiveListIndexState(newActiveListIndexState)
           setButtonState({
             ...buttonState,
-            [currentList?._listType as keyof ButtonState]: true,
+            [currentList?.listType as keyof ButtonState]: true,
           })
         }
       } else if (cursorIndexes?.type === 'mouseup') {
@@ -558,7 +558,7 @@ const MarkDownInput = (props: IProps) => {
         setActiveListIndexState(newActiveListIndexState)
         setButtonState({
           ...buttonState,
-          [currentList?._listType as keyof ButtonState]: true,
+          [currentList?.listType as keyof ButtonState]: true,
         })
       }
     }
@@ -678,7 +678,7 @@ const MarkDownInput = (props: IProps) => {
     // format each line of arr
     const formattedArr = onAddSpaceLineFormatter(splitInputOnNewlines)
     setInputValue(formattedArr.join(''))
-    console.log('HERE')
+    console.log('singlespace')
     // dispatch({ updateType:DispatchType.ClickSingleSpaceDispatchType.Click    // setCursorIndexes({ startIndex: cursorIndexes.startIndex + 3, endIndex: cursorIndexes.endIndex + 3 });
     dispatch({
       updateType: 'singleSpace',

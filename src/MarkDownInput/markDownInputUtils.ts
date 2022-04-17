@@ -298,19 +298,20 @@ export const calculateNewList = (
 ) => {
   const newStartLine = getFirstLineIndex(splitInputOneNewLines, currentList)
   const indexChange = newStartIndex - currentList.startIndex
-  const lineChange = newStartLine[0] - currentList._lineNumberStart
+  const lineChange = newStartLine[0] - currentList.lineNumberStart
   // console.log('list', list);
   // console.log('newStartLine', newStartLine);
   // console.log('indexChange', indexChange);
   // console.log('lineChange', lineChange);
 
   let newList: List = new List({
+    itemIndexes: currentList.itemIndexes,
     endIndex: currentList.endIndex + indexChange,
     content: currentList.content ?? [],
-    lineNumberStart: currentList._lineNumberStart + lineChange,
+    lineNumberStart: currentList.lineNumberStart + lineChange,
     startIndex: currentList.startIndex + indexChange,
     lineIndexes: currentList.lineIndexes.map((line) => line + lineChange),
-    listType: currentList._listType,
+    listType: currentList.listType,
     listsArr,
   })
   // console.log('new list', newList);
@@ -403,7 +404,8 @@ export const debounce = (func: (...args: any) => void, wait: number) => {
     timeout = setTimeout(later, wait)
   }
 }
-
+// returns index where cursor should move after continueList runs
+//is used inside continueList atm
 export const calculateCursorMoveIndex = (
   formattedInputVal: string,
   currentList: List,
@@ -413,9 +415,9 @@ export const calculateCursorMoveIndex = (
 ) => {
   const { content } = currentList
   const newSplitInputOnNewlines = formattedInputVal.split('\n')
-  console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
+  // console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
   const newIndexArrs = getStartIndexesOfEachLineArr(newSplitInputOnNewlines, 1)
-  console.log('newIndexArrs', newIndexArrs)
+  // console.log('newIndexArrs', newIndexArrs)
 
   // get new starIndex of list
   const newStartIndex = formattedInputVal.indexOf(content[0])
@@ -431,9 +433,9 @@ export const calculateCursorMoveIndex = (
     .indexOf(extractLineContent)
   // find index inside newSplitInputOnNewlines
   const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
-  console.log('extractLineContent', extractLineContent)
-  console.log('oldLineStartIndex', oldLineStartIndex)
-  console.log('newLineStartIndex', newLineStartIndex)
+  // console.log('extractLineContent', extractLineContent)
+  // console.log('oldLineStartIndex', oldLineStartIndex)
+  // console.log('newLineStartIndex', newLineStartIndex)
 
   const newCursorState: CursorState = {
     startIndex: cursorIndexes.startIndex + startDiff,
@@ -448,14 +450,16 @@ export const calculateCursorMoveIndex = (
     newSplitInputOnNewlines[newCurrentLineNumber].length
   // add line length to curent index, should be line start
   const newEndOfLineIndex = newLineStartIndex + newCurrentLineLength
-  console.log('end of curent line', newEndOfLineIndex)
-  console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
-  console.log('newStartIndex', newStartIndex)
-  console.log('newCurrentLineNumber', newCurrentLineNumber)
-  console.log('newCurrentLineLength', newCurrentLineLength)
-  if (currentList._listType === ListTypes.list) {
+  // console.log('end of curent line', newEndOfLineIndex)
+  // console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
+  // console.log('newStartIndex', newStartIndex)
+  // console.log('newCurrentLineNumber', newCurrentLineNumber)
+  // console.log('newCurrentLineLength', newCurrentLineLength)
+  const symbolLength = currentList.indexSymbolLength()
+  console.log('symbolLength', symbolLength)
+  if (currentList.listType === ListTypes.list) {
     return newEndOfLineIndex + 3
-  } else if (currentList._listType === ListTypes.listOl) {
+  } else if (currentList.listType === ListTypes.listOl) {
     return newEndOfLineIndex + 4
   } else {
     console.error('Invalid list type in')

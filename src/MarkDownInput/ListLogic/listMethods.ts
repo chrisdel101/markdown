@@ -41,19 +41,6 @@ export interface ContinueListInput {
   currentList?: List
   cursorIndexes: CursorState
 }
-export interface ListValues {
-  listNumber?: number
-  itemIndexes: number[]
-  lineNumberStart: number
-  startIndex: number
-  endIndex: number
-  content?: string[]
-  lineIndexes: Array<number>
-  listType: ListTypes.list | ListTypes.listOl
-  setEndIndex: (index: number, type: ListIndexSetter) => void
-  addItemIndex: (itemIndex: number) => void
-  writeLineIndexToInput: () => string
-}
 export interface ListContructorInput {
   lineNumberStart: number
   startIndex: number
@@ -66,6 +53,10 @@ export interface ListContructorInput {
 }
 export enum ListTypes {
   listOl = 'listOl',
+  list = 'list',
+}
+export enum ListSymbols {
+  listOl = '',
   list = 'list',
 }
 export interface ContinueListOutput {
@@ -104,11 +95,25 @@ enum ListIndexSetter {
   Add = 'add',
   Subtract = 'subtract',
 }
+export interface ListValues {
+  listNumber?: number
+  itemIndexes?: number[]
+  lineNumberStart: number
+  startIndex: number
+  endIndex: number
+  content?: string[]
+  lineIndexes: Array<number>
+  listType: ListTypes.list | ListTypes.listOl
+  setEndIndex: (index: number, type: ListIndexSetter) => void
+  addItemIndex: (itemIndex: number) => void
+  writeLineIndexToInput: () => string
+  indexSymbolLength: () => number
+}
 export class List {
-  _listNumber?: number
-  _lineNumberStart: number
+  private _listNumber?: number
+  private _lineNumberStart: number
   private _itemIndexes: Array<number>
-  _listType: ListTypes.list | ListTypes.listOl
+  private _listType: ListTypes.list | ListTypes.listOl
   private _startIndex: number
   private _lineIndexes: number[]
   private _endIndex: number
@@ -118,6 +123,7 @@ export class List {
   addItemIndex: (itemIndex: number) => void
   // writeLineIndexToInput: () => string;
   constructor({
+    itemIndexes,
     startIndex,
     endIndex,
     content,
@@ -131,7 +137,7 @@ export class List {
     this._content = content
     this._lineIndexes = lineIndexes
     this._lineNumberStart = lineNumberStart
-    this._itemIndexes = [1]
+    this._itemIndexes = itemIndexes ?? [1]
     this._listType = listType
     this._listNumber = listsArr.length
     this.addItemIndex = (itemIndex: number) => {
@@ -142,7 +148,15 @@ export class List {
       // console.log('THIS', this)
     }
   }
-
+  get listType() {
+    return this._listType
+  }
+  get lineNumberStart() {
+    return this._lineNumberStart
+  }
+  get listNumber() {
+    return this._listNumber
+  }
   get lineIndexes() {
     return this._lineIndexes
   }
@@ -170,6 +184,10 @@ export class List {
   get itemIndexes() {
     return this._itemIndexes
   }
+  // used only when adjusting a list, not when add new items
+  set itemIndexes(itemIndexes: number[]) {
+    this._itemIndexes = itemIndexes
+  }
   addSingleLineIndex = (lineIndex: number) => {
     this._lineIndexes.push(lineIndex)
   }
@@ -188,6 +206,14 @@ export class List {
         : `${this._itemIndexes.length}. `
     // console.log('writeLineIndexToInput', lineIndex)
     return lineIndex
+  }
+  indexSymbolLength = () => {
+    const symbolLength =
+      this._listType === ListTypes.list.valueOf()
+        ? `* `.length + 1
+        : `${this._itemIndexes.length}. `.length + 1
+    // console.log('writeLineIndexToInput', lineIndex)
+    return symbolLength
   }
   // setEndIndex = (index: number, type: ListIndexSetter) => {
   //   console.log('END INEDX', index)
@@ -366,11 +392,11 @@ export const updateList = ({
   // console.log('sliceOffStartIndexes', sliceOffStartIndexes);
   if (!currentList) return
   // find what line number of inputValue is within the list
-  let lineNumInCurrentList = currentLineNumber - currentList._lineNumberStart
+  let lineNumInCurrentList = currentLineNumber - currentList.lineNumberStart
   // console.log('lineNumInCurrentList', lineNumInCurrentList);
   // INPUTVALUE: slice arrs of inputValue to match current list
   const sliceInputValueStart = splitInputOnNewlines.slice(
-    currentList._lineNumberStart
+    currentList.lineNumberStart
   )
   // console.log('sliceInputValueStart input', sliceInputValueStart)
   // trim empty arr elements off end
@@ -411,7 +437,7 @@ export const updateList = ({
     let inputLineIndexes = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     // // slice arrs of inputValue to match current list range
     const sliceLineIndexesStart = inputLineIndexes?.slice(
-      currentList._lineNumberStart
+      currentList.lineNumberStart
     )
     const sliceLineIndexesEnd = sliceLineIndexesStart?.slice(
       0,
@@ -556,7 +582,7 @@ export const continueList = ({
     )
   }
   const sliceInputValueStart = splitInputOnNewlinesCopy.slice(
-    currentList._lineNumberStart
+    currentList.lineNumberStart
   )
   // console.log('sliceInputValueStart input', sliceInputValueStart);
   let sliceInputValueEnd = sliceInputValueStart.includes('')
@@ -708,7 +734,7 @@ export const continueList = ({
 
   // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
   return {
-    _cursorMovestoNextLine: moveToIndex!,
+    _cursorMovestoNextLine: moveToIndex || _cursorMovestoNextLine,
     _listsArr: listsArrCopy,
     _inputValue: _newLineListStr,
     _buttonState: buttonState,
