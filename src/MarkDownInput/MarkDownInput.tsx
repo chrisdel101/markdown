@@ -43,7 +43,7 @@ import {
   ContinueListOutput,
   breakOutList,
   BreakOutListOutput,
-  updateList,
+  updateListLine,
 } from './ListLogic/listMethods'
 import { IconLogicOutput } from './IconLogic/iconLogic'
 import {
@@ -61,6 +61,7 @@ import {
   indexInsideInputString,
   getCurrentLineInsideList,
   adjustListIndexes,
+  adjustCurrentListIndexes,
 } from './markDownInputUtils'
 import useDebounce from './useDebounce'
 
@@ -320,7 +321,7 @@ const MarkDownInput = (props: IProps) => {
       return
     }
     // console.log('indexesArr2', indexesArr)
-    console.log('listsArr', listsArr)
+    // console.log('listsArr', listsArr)
 
     const {
       _listsArr,
@@ -403,7 +404,7 @@ const MarkDownInput = (props: IProps) => {
           console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
           // console.log('splitInputOnNewlines', inputValue.split('\n'))
           // setTimeout(() => {})
-          const listUpdates = updateList({
+          const listUpdates = updateListLine({
             splitInputOnNewlines,
             activeListIndexState,
             listsArr,
@@ -430,19 +431,25 @@ const MarkDownInput = (props: IProps) => {
             }
           }
         }
-        // // cast to get rid of nevers
-        // const updatedListsArr: List[] = adjustListIndexes(
-        //   listsArr,
-        //   inputValue,
-        //   activeListIndexState.currentListIndex
-        // ) as List[]
-        // // returns empty array when no change
-        // if (updatedListsArr && updatedListsArr.length) {
-        //   // TODO - make more effiecent
-        //   // const :List[] = updatedListsArr as List[]
-        //   console.log('---ADJUST LIST----', updatedListsArr)
-        //   setListsArr(updatedListsArr)
-        // }
+        // console.log('------HERE-------')
+        const currentList = isNumber(activeListIndexState.currentListIndex)
+          ? listsArr[activeListIndexState.currentListIndex!]
+          : undefined
+        console.log('------HERE-------', currentList)
+        // cast to get rid of nevers
+        const updatedCurrentList: List = adjustCurrentListIndexes(
+          currentList!,
+          inputValue,
+          listsArr
+        ) as List
+        console.log('XXX', updatedCurrentList)
+
+        // returns empty array when no change
+        if (updatedCurrentList) {
+          console.log('---ADJUST CURRENT LIST----', updatedCurrentList)
+          listsArr[activeListIndexState.currentListIndex!] = updatedCurrentList
+          console.log('LISTSARRS', listsArr)
+        }
       }
     }
   }, [isTyping]) //debounce call after typing stops
@@ -483,8 +490,8 @@ const MarkDownInput = (props: IProps) => {
         // toggle off list if clicked before start of list, or after end
         if (isNumber(activeListIndexState.currentListIndex)) {
           const currentList = listsArr[activeListIndexState.currentListIndex!]
-          // console.log('cursorIndexes.startIndex', cursorIndexes.startIndex)
-          // console.log('currentList.startIndex', currentList.startIndex)
+          console.log('cursorIndexes', cursorIndexes)
+          console.log('currentList.startIndex', currentList)
 
           if (
             cursorIndexes.startIndex < currentList.startIndex ||
@@ -573,13 +580,14 @@ const MarkDownInput = (props: IProps) => {
       inputValue,
       activeListIndexState.currentListIndex
     ) as List[]
+    // console.log('updatedListsArr', updatedListsArr)
 
     // returns empty array when no change
     if (updatedListsArr && updatedListsArr.length) {
       // TODO - make more effiecent
       // const :List[] = updatedListsArr as List[]
-      // console.log('---ADJUST LIST----', updatedListsArr)
-      // setListsArr(updatedListsArr)
+      console.log('---ADJUST ALL LISTS----', updatedListsArr)
+      setListsArr(updatedListsArr)
     }
 
     // console.log('ref', textRef.current?.selectionStart);

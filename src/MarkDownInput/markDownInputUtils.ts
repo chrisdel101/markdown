@@ -314,18 +314,48 @@ export const calculateNewList = (
     listType: currentList.listType,
     listsArr,
   })
-  // console.log('new list', newList);
+  console.log('ADJUST new list', newList)
   return newList
 }
 // update the list indexes of other lists
 // use the list in context of inputValue to find indexes
+export const adjustCurrentListIndexes = (
+  currentList: List,
+  inputValue: string,
+  listsArr: List[]
+): List | undefined => {
+  if (!currentList || !inputValue) return
+  const splitInputOneNewLines = inputValue.split('\n')
+  console.log('splitInputOneNewLines', splitInputOneNewLines)
+
+  // find the start of list in inputValue
+  const findListStartIndex = inputValue.indexOf(currentList?.content?.[0])
+  // if indexes don't match then list start has changed
+  if (findListStartIndex !== currentList.startIndex) {
+    console.log('findListStartIndex', findListStartIndex)
+    console.log('list.startIndex', currentList.startIndex)
+
+    // make new list with values
+    const newList: List = calculateNewList(
+      currentList,
+      findListStartIndex,
+      splitInputOneNewLines,
+      listsArr
+    )
+    console.log('new list', newList)
+    return newList
+  } else {
+    console.log('NO ADJUSTMENT')
+  }
+}
 export const adjustListIndexes = (
   listsArr: List[],
   inputValue: string,
   activeListIndex?: number
 ) => {
+  let changesMade = false
   //never is empty arr
-  // console.log('active', activeListIndex);
+  console.log('active', activeListIndex)
   const splitInputOnNewlines = inputValue.split('\n')
   if (listsArr.length) {
     // console.log('------ADJUST--------');
@@ -338,34 +368,36 @@ export const adjustListIndexes = (
       // console.log('activeListIndex', activeListIndex)
       // console.log('list', list)
       // make sure we don't modify a list we're active in
-      if (i !== activeListIndex) {
-        if (list?.content) {
-          // find the start of list in inputValue
-          const findListStartIndex = inputValue.indexOf(list?.content?.[0])
-          // if indexes don't match then list start has changed
-          if (findListStartIndex !== list.startIndex) {
-            console.log('findListStartIndex', findListStartIndex)
-            console.log('list.startIndex', list.startIndex)
+      // if (i !== activeListIndex) {
+      if (list?.content) {
+        // find the start of list in inputValue
+        const findListStartIndex = inputValue.indexOf(list?.content?.[0])
+        // if indexes don't match then list start has changed
+        if (findListStartIndex !== list.startIndex) {
+          changesMade = true
+          console.log('findListStartIndex', findListStartIndex)
+          console.log('list.startIndex', list.startIndex)
 
-            // make new list with values
-            const newList = calculateNewList(
-              listsArr[i],
-              findListStartIndex,
-              splitInputOnNewlines,
-              listsArr
-            )
-            console.log('new list', newList)
-            return newList
-          } else {
-            console.log('NO ADJUSTMENT')
-            //   return []
-          }
-        } //else {
-        //   return []
-        // }
-      } //else {
+          // make new list with values
+          const newList = calculateNewList(
+            listsArr[i],
+            findListStartIndex,
+            splitInputOnNewlines,
+            listsArr
+          )
+          console.log('new list', newList)
+          return newList
+        } else {
+          console.log('NO ADJUSTMENT')
+          return list //return as is
+        }
+      } else {
+        console.error('List content empty')
+        return list
+      }
+      // } else {
       // console.log('old list')
-      // return list
+      //   return list
       // }
       //   return []
       // }
@@ -379,11 +411,11 @@ export const adjustListIndexes = (
   //   updatedLists.length > 1 &&
   //   updatedLists.length === listsArr.length
   // ) {
-  console.log('updatedLists', updatedLists)
+  if (changesMade) console.log('updatedLists', updatedLists)
 
   //   return updatedLists
   // }
-  return updatedLists
+  return changesMade ? updatedLists : undefined
   // if (newStartIndexes?.[0]) {
   //   listsArr?.[0] && calculateNewList(listsArr[0], newStartIndexes[0], currentLineNumber);
   // }
@@ -416,16 +448,16 @@ export const calculateCursorMoveIndex = (
 ) => {
   const { content, startIndex } = currentList
   const newSplitInputOnNewlines = formattedInputVal.split('\n')
-  console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
-  console.log('splitInputOneNewLines', splitInputOneNewLines)
+  // console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
+  // console.log('splitInputOneNewLines', splitInputOneNewLines)
   const newIndexArrs = getStartIndexesOfEachLineArr(newSplitInputOnNewlines, 1)
-  console.log('newIndexArrs', newIndexArrs)
+  // console.log('newIndexArrs', newIndexArrs)
 
   // get new starIndex of list by matching content to string
   const newListStartIndex = formattedInputVal.indexOf(content[0])
-  console.log('newListStartIndex', newListStartIndex)
+  // console.log('newListStartIndex', newListStartIndex)
   const staleListStartIndex = startIndex
-  console.log('staleStartIndex', staleListStartIndex)
+  // console.log('staleStartIndex', staleListStartIndex)
 
   // // extract content from old content
   // const startDiff = newListStartIndex - staleListStartIndex
@@ -449,7 +481,7 @@ export const calculateCursorMoveIndex = (
   }
   console.log('CURSOR ADJ NEEDED')
   const startDiff = newListStartIndex - staleListStartIndex
-  console.log('startDiff', startDiff)
+  // console.log('startDiff', startDiff)
   const newCursorState: CursorState = {
     startIndex: cursorIndexes.startIndex + startDiff,
     endIndex: cursorIndexes.endIndex + startDiff,
@@ -457,24 +489,24 @@ export const calculateCursorMoveIndex = (
   const newCurrentLineNumber = getCurrentLine(newIndexArrs, newCursorState)
   // get length of the line
   const newCurrentLine = newSplitInputOnNewlines[newCurrentLineNumber]
-  console.log('newCurrentLine', newCurrentLine)
+  // console.log('newCurrentLine', newCurrentLine)
 
   const extractLineContent = splitInputOneNewLines[currentLineNumber]
-  console.log('extractLineContent', extractLineContent)
+  // console.log('extractLineContent', extractLineContent)
   const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
-  console.log('newLineStartIndex', newLineStartIndex)
+  // console.log('newLineStartIndex', newLineStartIndex)
 
   const newCurrentLineLength =
     newSplitInputOnNewlines[newCurrentLineNumber].length
   // add line length to curent index, should be line start
   const newEndOfLineIndex = newLineStartIndex + newCurrentLineLength
-  console.log('end of curent line', newEndOfLineIndex)
+  // console.log('end of curent line', newEndOfLineIndex)
   // console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
   // console.log('newListStartIndex', newListStartIndex)
-  console.log('newCurrentLineNumber', newCurrentLineNumber)
+  // console.log('newCurrentLineNumber', newCurrentLineNumber)
   // console.log('newCurrentLineLength', newCurrentLineLength)
   const symbolLength = currentList.indexSymbolLength()
-  console.log('symbolLength', symbolLength)
+  // console.log('symbolLength', symbolLength)
   if (currentList.listType === ListTypes.list) {
     return newEndOfLineIndex + symbolLength
   } else if (currentList.listType === ListTypes.listOl) {

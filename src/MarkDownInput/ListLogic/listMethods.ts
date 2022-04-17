@@ -371,7 +371,7 @@ export const createList = ({
   // console.log('returnValues', returnValues);
   return returnValues
 }
-export const updateList = ({
+export const updateListLine = ({
   splitInputOnNewlines,
   activeListIndexState,
   currentLineNumber,
