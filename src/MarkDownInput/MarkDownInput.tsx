@@ -63,7 +63,6 @@ import {
   adjustListIndexes,
   adjustCurrentListIndexes,
   calculateCursorMoveIndex,
-  CalculateCursorMoveIndexParams,
 } from './markDownInputUtils'
 import useDebounce from './useDebounce'
 
@@ -425,9 +424,7 @@ const MarkDownInput = (props: IProps) => {
         const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
         if (!isTyping) {
           splitInputOnNewlines = debouncedInputValue.split('\n')
-          console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
-          // console.log('splitInputOnNewlines', inputValue.split('\n'))
-          // setTimeout(() => {})
+          // console.log('DE-splitInputOnNewlines', splitInputOnNewlines)
           const listUpdates = updateListLine({
             splitInputOnNewlines,
             activeListIndexState,
@@ -437,39 +434,43 @@ const MarkDownInput = (props: IProps) => {
             buttonState,
           })
           if (listUpdates !== undefined) {
-            // console.log('listUpdates', listUpdates)
-            // console.log('activeListIndexState', activeListIndexState)
-            // if active we're inside a list
-            if (typeof activeListIndexState.currentListIndex === 'number') {
-              if (listUpdates?._listsArr) {
-                setListsArr(listUpdates?._listsArr)
-              }
-              // were outside a list
-            } else {
-              if (listUpdates?._listsArr) {
-                setListsArr(listUpdates?._listsArr)
-              }
-              if (listUpdates?._buttonState) {
-                setButtonState(listUpdates._buttonState)
-              }
-            }
+            const { _listsArr, _buttonState } = listUpdates
+            setListsArr(_listsArr)
+            setButtonState(_buttonState)
+            // // console.log('listUpdates', listUpdates)
+            // // console.log('activeListIndexState', activeListIndexState)
+            // // if active we're inside a list
+            // if (isNumber(activeListIndexState.currentListIndex)) {
+            //   if (listUpdates?._listsArr) {
+            //     setListsArr(listUpdates?._listsArr)
+            //   }
+            //   // were outside a list
+            // } else {
+            //   if (listUpdates?._listsArr) {
+            //     setListsArr(listUpdates?._listsArr)
+            //   }
+            //   if (listUpdates?._buttonState) {
+            //     setButtonState(listUpdates._buttonState)
+            //   }
+            // }
+            // check for deleted lines
           }
-        }
-        // console.log('------HERE-------')
-        const currentList = isNumber(activeListIndexState.currentListIndex)
-          ? listsArr[activeListIndexState.currentListIndex!]
-          : undefined
-        // cast to get rid of nevers
-        const updatedCurrentList: List = adjustCurrentListIndexes(
-          currentList!,
-          inputValue,
-          listsArr
-        ) as List
-
-        // returns empty array when no change
-        if (updatedCurrentList) {
-          console.log('---ADJUST CURRENT LIST----', updatedCurrentList)
-          listsArr[activeListIndexState.currentListIndex!] = updatedCurrentList
+          // console.log('------HERE-------')
+          const currentList = isNumber(activeListIndexState.currentListIndex)
+            ? listsArr[activeListIndexState.currentListIndex!]
+            : undefined
+          // cast to get rid of nevers
+          const updatedCurrentList: List = adjustCurrentListIndexes(
+            currentList!,
+            inputValue,
+            listsArr
+          ) as List
+          // returns empty array when no change
+          if (updatedCurrentList) {
+            console.log('---ADJUST CURRENT LIST----', updatedCurrentList)
+            listsArr[activeListIndexState.currentListIndex!] =
+              updatedCurrentList
+          }
         }
       }
     }
@@ -495,11 +496,8 @@ const MarkDownInput = (props: IProps) => {
     let splitInputOnNewlines = inputValue.split('\n')
     const indexesArr = getStartIndexesOfEachLineArr(splitInputOnNewlines, 1)
     const whichLineNumOnNow = getCurrentLine(indexesArr, cursorIndexes) || 0
-    // console.log('currentLineNumber', currentLineNumber);
-    // console.log('activeListIndexState', activeListIndexState);
     // set currentine when index moves
     setCurrentLineNumber(whichLineNumOnNow)
-    // ressaign to debouncer)
 
     if (buttonState['listOl'] || buttonState['list']) {
       if (
@@ -508,12 +506,11 @@ const MarkDownInput = (props: IProps) => {
           cursorIndexes.keyType ?? ''
         )
       ) {
-        // toggle off list if clicked before start of list, or after end
+        // toggle off buttonState/activeList if clicked before start of list, or after end
         if (isNumber(activeListIndexState.currentListIndex)) {
           const currentList = listsArr[activeListIndexState.currentListIndex!]
-          console.log('cursorIndexes', cursorIndexes)
+          // console.log('cursorIndexes', cursorIndexes)
           console.log('currentList.startIndex', currentList)
-
           if (
             cursorIndexes.startIndex < currentList.startIndex ||
             cursorIndexes.endIndex > currentList.endIndex
@@ -528,8 +525,6 @@ const MarkDownInput = (props: IProps) => {
             })
           }
         }
-
-        // console.log('move before start')
         // console.log('CCC', cursorIndexes?.keyType)
         // console.log('CCC', cursorIndexes?.type)
       }
@@ -554,7 +549,7 @@ const MarkDownInput = (props: IProps) => {
           const insideList = isCursorInsideList(listsArr, cursorIndexes)
           if (!insideList) return
           // console.log('activeListIndexState', activeListIndexState)
-          console.log('INN', insideList)
+          console.log('INN arrow', insideList)
           const currentListIndex =
             insideList && getCurrentListIndex(listsArr, cursorIndexes)
           if (typeof currentListIndex !== 'number') return
@@ -576,7 +571,7 @@ const MarkDownInput = (props: IProps) => {
         const insideList = isCursorInsideList(listsArr, cursorIndexes)
         if (!insideList) return
         // console.log('activeListIndexState', activeListIndexState);
-        console.log('INN', insideList)
+        console.log('INN mouse', insideList)
         const currentListIndex =
           insideList && getCurrentListIndex(listsArr, cursorIndexes)
         if (typeof currentListIndex !== 'number') return
@@ -596,19 +591,19 @@ const MarkDownInput = (props: IProps) => {
       }
     }
     // cast to get rid of nevers
-    const updatedListsArr: List[] = adjustListIndexes(
+    const adjustedListsArr: List[] = adjustListIndexes(
       listsArr,
       inputValue,
       activeListIndexState.currentListIndex
     ) as List[]
-    // console.log('updatedListsArr', updatedListsArr)
+    // console.log('adjustedListsArr', adjustedListsArr)
 
     // returns empty array when no change
-    if (updatedListsArr && updatedListsArr.length) {
+    if (adjustedListsArr && adjustedListsArr.length) {
       // TODO - make more effiecent
-      // const :List[] = updatedListsArr as List[]
-      console.log('---ADJUST ALL LISTS----', updatedListsArr)
-      setListsArr(updatedListsArr)
+      // const :List[] = adjustedListsArr as List[]
+      console.log('---ADJUST ALL LISTS----', adjustedListsArr)
+      setListsArr(adjustedListsArr)
     }
 
     // console.log('ref', textRef.current?.selectionStart);
@@ -631,16 +626,14 @@ const MarkDownInput = (props: IProps) => {
     dispatch({ updateType: DispatchType.Reset, cursorWrapperInit })
     setActiveListIndexState(initActiveListIndex)
     setListsArr([])
-    // setCurrentWorkingList(undefined);
   }
   const resetButtonState = (exceptions?: string[]) => {
     //reset all button states to false
     const _buttonState = { ...buttonState }
     //@ts-ignore
-    Object.keys(_buttonState).map((v: string) => {
-      if (!exceptions?.some((i) => i === v)) {
-        //@ts-ignore
-        return (_buttonState[v] = false)
+    Object.keys(_buttonState).map((state: string) => {
+      if (!exceptions?.some((exception) => exception === state)) {
+        return (_buttonState[state as keyof ButtonState] = false)
       }
     })
     setButtonState(_buttonState)
@@ -657,11 +650,6 @@ const MarkDownInput = (props: IProps) => {
           refCurrent: textRef.current,
         })
       }
-    // console.log('updateCursorPosition ');
-    // setCursorIndexes({
-    //   startIndex: textRef.current?.selectionStart || 0,
-    //   endIndex: textRef.current?.selectionEnd || 0,
-    // });
   }
   const updateCursorPositionManually = (
     newCursorIndexes: CursorState,

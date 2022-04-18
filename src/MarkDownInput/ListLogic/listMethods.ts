@@ -406,19 +406,7 @@ export const updateListLine = ({
     currentList.startIndex = sliceLineIndexesEnd[0]
     currentList.content = sliceInputValueEnd
 
-    // let newList = {
-    //   ...currentList,
-    //   // assign lineIIndexes of list in progress
-    //   // lineIndexes: sliceLineIndexesEnd,
-    //   // reassign first as start
-    //   startIndex: sliceLineIndexesEnd[0],
-    //   // endIndex: newEndIndex,
-    //   content: sliceInputValueEnd,
-    // }
-    // console.log('New newList create', newList)
-
     const listsArrCopy = [...listsArr]
-    // console.log('32', newList);
     // re-write list
     if (isNumber(listIndex)) listsArrCopy[listIndex!] = currentList
     return {
@@ -426,7 +414,6 @@ export const updateListLine = ({
       // buttonState doesn't change - just passing for inter
       _buttonState: buttonState,
     }
-    // }
   } else {
     console.log('NO DIFF FOUND')
   }
