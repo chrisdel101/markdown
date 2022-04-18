@@ -6,6 +6,7 @@ import {
   isNumber,
   regex,
   calculateCursorMoveIndex,
+  CalculateCursorMoveIndexParams,
 } from '../markDownInputUtils'
 
 export interface CreateListInput {
@@ -61,7 +62,6 @@ export enum ListSymbols {
   list = 'list',
 }
 export interface ContinueListOutput {
-  _newCursorIndex?: number
   _cursorMovestoNextLine: number
   _buttonState: ButtonState
   _listsArr: List[]
@@ -217,51 +217,7 @@ export class List {
     // console.log('writeLineIndexToInput', lineIndex)
     return symbolLength
   }
-  // setEndIndex = (index: number, type: ListIndexSetter) => {
-  //   console.log('END INEDX', index)
-  //   console.log('END INEDX', type)
-  //   console.log('this.endIndex', this.endIndex)
-  //   // console.log('END INEDX', type);
-  //   if (type === ListIndexSetter.Set) {
-  //     const itemIndexLen = ListTypes.list.valueOf()
-  //       ? `* `.length
-  //       : `${this._itemIndexes.length}. `.length
-  //     const newIndex = index + itemIndexLen
-  //     return newIndex
-  //   } else if (type === ListIndexSetter.Add) {
-  //     const newIndex = this.endIndex + index
-  //     console.log('ADD', newIndex)
-  //     return newIndex
-  //   } else if (type === ListIndexSetter.Subtract) {
-  //     const newIndex = this.endIndex - index
-  //     console.log('SUB', newIndex)
-  //     return newIndex
-  //   }
-  //   return 0
-  // }
 }
-// export const listContructor = ({
-//   startIndex,
-//   endIndex,
-//   content,
-//   lineIndexes,
-//   lineNumberStart,
-//   listType,
-//   listsArr,
-// }: ListContructorInput) => {
-//   const List: List = {
-//     startIndex,
-//     endIndex,
-//     content,
-//     lineIndexes,
-//     lineNumberStart,
-//     itemIndexes: [1],
-//     listType,
-//     listNumber: listsArr.length,
-//     writeLineIndexToInput: listType === ListTypes.list.valueOf() ? `* ` : `${(itemIndexes.slice(-1)[0] + 1).toString()}. `,
-//   };
-//   return List;
-// };
 export const createList = ({
   listType,
   splitOnSpacesArr,
@@ -715,15 +671,15 @@ export const continueList = ({
   console.log('addNewLineCharsArr', addNewLineCharsArr)
   const _newLineListStr = addNewLineCharsArr.join('')
   // console.log('_newLineListStr', _newLineListStr);
-  const newCursorIndex = calculateCursorMoveIndex(
-    _newLineListStr,
-    currentList,
-    cursorIndexes,
-    currentLineNumber,
-    splitInputOnNewlines,
-    inputValue
-  )
-  console.log('newCursorIndex', newCursorIndex)
+  // const newCursorIndex = calculateCursorMoveIndex({
+  //   formattedInputVal: _newLineListStr,
+  //   currentList,
+  //   cursorIndexes,
+  //   currentLineNumber,
+  //   splitInputOnNewlines,
+  //   inputValue,
+  // })
+  // console.log('newCursorIndex', newCursorIndex)
   let listsArrCopy = [...listsArr]
   if (isNumber(currentListNumber)) {
     // console.log('1', listsArrCopy)
@@ -743,7 +699,6 @@ export const continueList = ({
   // console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
   return {
     _cursorMovestoNextLine: _cursorMovestoNextLine,
-    _newCursorIndex: newCursorIndex,
     _listsArr: listsArrCopy,
     _inputValue: _newLineListStr,
     _buttonState: buttonState,

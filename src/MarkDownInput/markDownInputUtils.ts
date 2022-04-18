@@ -2,6 +2,14 @@ import { CursorState, ButtonState } from './MarkDownInput'
 import { List, ListTypes } from './ListLogic/listMethods'
 import { format } from 'path'
 
+export interface CalculateCursorMoveIndexParams {
+  formattedInputVal: string
+  currentList: List
+  cursorIndexes: CursorState
+  currentLineNumber: number
+  splitInputOnNewlines: string[]
+  inputValue?: string
+}
 export const regex = {
   isOrderListIndexAtLineStartWithContent: /^\d+\.\s\w+/,
   isListIndexAtLineStartWithContent: /^\*\s\w+/,
@@ -317,8 +325,7 @@ export const calculateNewList = (
   console.log('ADJUST new list', newList)
   return newList
 }
-// update the list indexes of other lists
-// use the list in context of inputValue to find indexes
+// update only the current list
 export const adjustCurrentListIndexes = (
   currentList: List,
   inputValue: string,
@@ -357,10 +364,6 @@ export const adjustListIndexes = (
   //never is empty arr
   console.log('active', activeListIndex)
   const splitInputOnNewlines = inputValue.split('\n')
-  if (listsArr.length) {
-    // console.log('------ADJUST--------');
-    // console.log('adjustListIndexes', splitInputOnNewlines)
-  }
   // / loop over startIndexes, retu rn new start indexes if changed
   const updatedLists = listsArr
     .map((list, i) => {
@@ -368,7 +371,6 @@ export const adjustListIndexes = (
       // console.log('activeListIndex', activeListIndex)
       // console.log('list', list)
       // make sure we don't modify a list we're active in
-      // if (i !== activeListIndex) {
       if (list?.content) {
         // find the start of list in inputValue
         const findListStartIndex = inputValue.indexOf(list?.content?.[0])
@@ -395,32 +397,12 @@ export const adjustListIndexes = (
         console.error('List content empty')
         return list
       }
-      // } else {
-      // console.log('old list')
-      //   return list
-      // }
-      //   return []
-      // }
     })
     // https://stackoverflow.com/a/57989288/5972531
     .filter((list): list is List => Boolean(list))
-  // })
-  // only check if there is more than 1 list
-  // if (
-  //   updatedLists &&
-  //   updatedLists.length > 1 &&
-  //   updatedLists.length === listsArr.length
-  // ) {
   if (changesMade) console.log('updatedLists', updatedLists)
 
-  //   return updatedLists
-  // }
   return changesMade ? updatedLists : undefined
-  // if (newStartIndexes?.[0]) {
-  //   listsArr?.[0] && calculateNewList(listsArr[0], newStartIndexes[0], currentLineNumber);
-  // }
-
-  // }
 }
 export const debounce = (func: (...args: any) => void, wait: number) => {
   let timeout: any
@@ -438,14 +420,14 @@ export const debounce = (func: (...args: any) => void, wait: number) => {
 }
 // returns index where cursor should move after continueList runs
 //is used inside continueList atm
-export const calculateCursorMoveIndex = (
-  formattedInputVal: string,
-  currentList: List,
-  cursorIndexes: CursorState,
-  currentLineNumber: number,
-  splitInputOneNewLines: string[],
-  currentInputValue: string
-) => {
+export const calculateCursorMoveIndex = ({
+  formattedInputVal,
+  currentList,
+  cursorIndexes,
+  currentLineNumber,
+  splitInputOnNewlines,
+  inputValue,
+}: CalculateCursorMoveIndexParams) => {
   const { content, startIndex } = currentList
   const newSplitInputOnNewlines = formattedInputVal.split('\n')
   // console.log('newSplitInputOnNewlines', newSplitInputOnNewlines)
@@ -491,7 +473,7 @@ export const calculateCursorMoveIndex = (
   const newCurrentLine = newSplitInputOnNewlines[newCurrentLineNumber]
   // console.log('newCurrentLine', newCurrentLine)
 
-  const extractLineContent = splitInputOneNewLines[currentLineNumber]
+  const extractLineContent = splitInputOnNewlines[currentLineNumber]
   // console.log('extractLineContent', extractLineContent)
   const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
   // console.log('newLineStartIndex', newLineStartIndex)

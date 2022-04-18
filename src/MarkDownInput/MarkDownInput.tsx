@@ -62,6 +62,8 @@ import {
   getCurrentLineInsideList,
   adjustListIndexes,
   adjustCurrentListIndexes,
+  calculateCursorMoveIndex,
+  CalculateCursorMoveIndexParams,
 } from './markDownInputUtils'
 import useDebounce from './useDebounce'
 
@@ -288,7 +290,8 @@ const MarkDownInput = (props: IProps) => {
       ? false
       : true
     if (!isNumber(activeListIndexState.currentListIndex)) return
-    const { listType } = listsArr[activeListIndexState.currentListIndex!]
+    const currentList = listsArr[activeListIndexState.currentListIndex!]
+    const { listType } = currentList
     // break out of list - check if previous line has only list index
     if (
       (regex.isOrderedListItemAloneOnLine.test(
@@ -318,6 +321,21 @@ const MarkDownInput = (props: IProps) => {
       setInputValue(_inputValue)
       setActiveListIndexState(_activeListIndexState)
       setButtonState(_buttonState)
+      const newCursorIndex = calculateCursorMoveIndex({
+        formattedInputVal: _inputValue,
+        currentList,
+        cursorIndexes,
+        currentLineNumber,
+        splitInputOnNewlines,
+      })
+      console.log('_newCursorIndex', newCursorIndex)
+      updateCursorPositionManually(
+        {
+          startIndex: currentList.endIndex + 1,
+          endIndex: currentList.endIndex + 1,
+        },
+        DispatchType.List
+      )
       return
     }
     // console.log('indexesArr2', indexesArr)
@@ -328,7 +346,6 @@ const MarkDownInput = (props: IProps) => {
       _inputValue,
       _buttonState,
       _cursorMovestoNextLine,
-      _newCursorIndex,
     }: ContinueListOutput = continueList({
       listType,
       splitInputOnNewlines,
@@ -341,17 +358,24 @@ const MarkDownInput = (props: IProps) => {
       inputValue,
     })
     console.log('_cursorMovestoNextLine', _cursorMovestoNextLine)
-    console.log('_newCursorIndex', _newCursorIndex)
     console.log('cursorIndexes', cursorIndexes)
     setListsArr(_listsArr)
     setInputValue(_inputValue)
     setButtonState(_buttonState)
+    const newCursorIndex = calculateCursorMoveIndex({
+      formattedInputVal: _inputValue,
+      currentList,
+      cursorIndexes,
+      currentLineNumber,
+      splitInputOnNewlines,
+    })
+    console.log('_newCursorIndex', newCursorIndex)
     updateCursorPositionManually(
       {
         startIndex:
-          _newCursorIndex ?? cursorIndexes.startIndex + _cursorMovestoNextLine,
+          newCursorIndex ?? cursorIndexes.startIndex + _cursorMovestoNextLine,
         endIndex:
-          _newCursorIndex ?? cursorIndexes.endIndex + _cursorMovestoNextLine,
+          newCursorIndex ?? cursorIndexes.endIndex + _cursorMovestoNextLine,
       },
       DispatchType.List
     )
@@ -435,20 +459,17 @@ const MarkDownInput = (props: IProps) => {
         const currentList = isNumber(activeListIndexState.currentListIndex)
           ? listsArr[activeListIndexState.currentListIndex!]
           : undefined
-        console.log('------HERE-------', currentList)
         // cast to get rid of nevers
         const updatedCurrentList: List = adjustCurrentListIndexes(
           currentList!,
           inputValue,
           listsArr
         ) as List
-        console.log('XXX', updatedCurrentList)
 
         // returns empty array when no change
         if (updatedCurrentList) {
           console.log('---ADJUST CURRENT LIST----', updatedCurrentList)
           listsArr[activeListIndexState.currentListIndex!] = updatedCurrentList
-          console.log('LISTSARRS', listsArr)
         }
       }
     }
@@ -674,14 +695,8 @@ const MarkDownInput = (props: IProps) => {
       previousInputValue: y,
     })
   }
-  //@ts-ignore
-  // console.log('handler', handler())
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value)
-    // dispatch({ updateType: 'input' });
-    // adjust line indexes of lists
-    // const currentActiveListIndex = activeListIndexState.currentListIndex;
-    // console.log('CURRENT', currentActiveListIndex);
   }
   // add double space after each \n to achieve single spacing
   // https://github.com/remarkjs/react-markdown/issues/273#issuecomment-495701177
@@ -693,13 +708,13 @@ const MarkDownInput = (props: IProps) => {
     setInputValue(formattedArr.join(''))
     console.log('singlespace')
     // dispatch({ updateType:DispatchType.ClickSingleSpaceDispatchType.Click    // setCursorIndexes({ startIndex: cursorIndexes.startIndex + 3, endIndex: cursorIndexes.endIndex + 3 });
-    dispatch({
-      updateType: 'singleSpace',
-      payload: {
-        startIndex: cursorIndexes.startIndex + 3,
+    updateCursorPositionManually(
+      {
+        startIndex: cursorIndexes.endIndex + 3,
         endIndex: cursorIndexes.endIndex + 3,
       },
-    })
+      DispatchType.List
+    )
   }
 
   const handleClick = (currentClick: ClickType) => {
