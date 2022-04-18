@@ -297,20 +297,54 @@ export const getFirstLineIndex = (
   //   }
   // });
 }
+const calculacteStartEndIndexChange = (
+  currentList: List,
+  newStartIndex: number,
+  splitInputOneNewLines: string[]
+) => {
+  const newStartLine = getFirstLineIndex(splitInputOneNewLines, currentList)
+  const indexChange = newStartIndex - currentList.startIndex
+  const lineChange = newStartLine[0] - currentList.lineNumberStart
+  return {
+    lineChange,
+    indexChange,
+  }
+}
+const calculacteLineIndexChange = (
+  currentList: List,
+  newInputValue: string
+) => {
+  const newSplitInputOnNewlines = newInputValue.split('\n')
+  const newIndexArrs = getStartIndexesOfEachLineArr(newSplitInputOnNewlines, 1)
+  console.log('newIndexArrs', newIndexArrs)
+  console.log('currentList', currentList.lineIndexes)
+  const actualLineStartIndex = newInputValue.indexOf(currentList.content[0])
+  console.log('actualLineStartIndex', actualLineStartIndex)
+  const indexDiff = actualLineStartIndex - currentList.lineIndexes[0]
+  console.log('indexDiff', indexDiff)
+  return indexDiff
+}
 // takes a list + new starting indexes, return updated list
 export const calculateNewList = (
   currentList: List,
   newStartIndex: number,
   splitInputOneNewLines: string[],
-  listsArr: List[]
+  listsArr: List[],
+  inputValue: string
 ) => {
-  const newStartLine = getFirstLineIndex(splitInputOneNewLines, currentList)
-  const indexChange = newStartIndex - currentList.startIndex
-  const lineChange = newStartLine[0] - currentList.lineNumberStart
-  // console.log('list', list);
-  // console.log('newStartLine', newStartLine);
-  // console.log('indexChange', indexChange);
-  // console.log('lineChange', lineChange);
+  const { indexChange, lineChange } = calculacteStartEndIndexChange(
+    currentList,
+    newStartIndex,
+    splitInputOneNewLines
+  )
+  const indexDiff = calculacteLineIndexChange(currentList, inputValue)
+  calculacteLineIndexChange(currentList, inputValue)
+  const newLineIndexes =
+    indexDiff !== 0
+      ? currentList.lineIndexes.map((lineIndex) => {
+          return lineIndex + indexDiff
+        })
+      : currentList.lineIndexes
 
   let newList: List = new List({
     itemIndexes: currentList.itemIndexes,
@@ -318,7 +352,7 @@ export const calculateNewList = (
     content: currentList.content ?? [],
     lineNumberStart: currentList.lineNumberStart + lineChange,
     startIndex: currentList.startIndex + indexChange,
-    lineIndexes: currentList.lineIndexes.map((line) => line + lineChange),
+    lineIndexes: newLineIndexes,
     listType: currentList.listType,
     listsArr,
   })
@@ -347,7 +381,8 @@ export const adjustCurrentListIndexes = (
       currentList,
       findListStartIndex,
       splitInputOneNewLines,
-      listsArr
+      listsArr,
+      inputValue
     )
     console.log('new list', newList)
     return newList
@@ -385,7 +420,8 @@ export const adjustListIndexes = (
             listsArr[i],
             findListStartIndex,
             splitInputOnNewlines,
-            listsArr
+            listsArr,
+            inputValue
           )
           console.log('new list', newList)
           return newList
@@ -426,7 +462,6 @@ export const calculateCursorMoveIndex = ({
   cursorIndexes,
   currentLineNumber,
   splitInputOnNewlines,
-  inputValue,
 }: CalculateCursorMoveIndexParams) => {
   const { content, startIndex } = currentList
   const newSplitInputOnNewlines = formattedInputVal.split('\n')
@@ -440,23 +475,6 @@ export const calculateCursorMoveIndex = ({
   // console.log('newListStartIndex', newListStartIndex)
   const staleListStartIndex = startIndex
   // console.log('staleStartIndex', staleListStartIndex)
-
-  // // extract content from old content
-  // const startDiff = newListStartIndex - staleListStartIndex
-  // console.log('startDiff', startDiff)
-
-  // const extractLineContent = splitInputOneNewLines[currentLineNumber]
-  // // find index inside of old inputValue
-  // const oldListStartIndex = currentInputValue.indexOf(extractLineContent)
-  // // //@ts-ignore
-  // console.log('old', oldListStartIndex)
-  // //@ts-ignore
-  // console.log('new', formattedInputVal.split())
-  // find index inside newSplitInputOnNewlines
-  // const newLineStartIndex = formattedInputVal.indexOf(extractLineContent)
-  // console.log('extractLineContent', extractLineContent)
-  // console.log('oldListStartIndex', oldListStartIndex)
-  // console.log('newLineStartIndex', newLineStartIndex)
   if (staleListStartIndex === newListStartIndex) {
     console.log('NO CURSOR ADJ NEEDED')
     return
